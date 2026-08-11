@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صالون ومركز تجميل</title>
+      <!-- استدعاء خط Cairo الأساسي -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- استدعاء خط Berkshire Swash لاسم الصالون -->
+    <link href="https://fonts.googleapis.com/css2?family=Berkshire+Swash&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        :root {
+            --primary-gold: #D4AF37;
+            --soft-pink: #F8E7E9;
+            --dark-black: #1A1A1A;
+            --pure-white: #FFFFFF;
+            --text-gray: #4A4A4A;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background-color: var(--soft-pink); color: var(--dark-black); overflow-x: hidden; }
+
+        .fade-in { opacity: 0; transition: opacity 1s ease-in; }
+        .fade-in.visible { opacity: 1; }
+        .slide-up { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
+        .slide-up.visible { opacity: 1; transform: translateY(0); }
+/* تخصيص خط اسم الصالون باللغة الإنجليزية */
+#dynamic-header-name,
+#dynamic-hero-name,
+#dynamic-footer-name {
+    font-family: 'Berkshire Swash', serif;
+    letter-spacing: 1px; /* مسافة بسيطة بين الحروف لزيادة الفخامة */
+}
+        /* تعديلات الهيدر والشعار للظهور في المنتصف وبحجم كبير */
+        header { position: absolute; top: 0; left: 0; right: 0; padding: 25px 20px; display: flex; justify-content: center; align-items: center; z-index: 10; width: 100%; }
+        .logo-container { 
+            display: flex; 
+            flex-direction: column; /* جعل الشعار فوق الاسم */
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px; 
+            text-decoration: none; 
+            background: rgba(255, 255, 255, 0.15); 
+            padding: 15px 40px; 
+            border-radius: 20px; 
+            backdrop-filter: blur(8px); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .logo-container img { 
+            height: 140px; /* تكبير الشعار بشكل ملحوظ */
+            width: auto; 
+            max-width: 100%;
+            object-fit: contain; 
+        }
+        .logo-container h2 { 
+            font-size: 1.8rem; 
+            margin: 0; 
+            color: var(--primary-gold); 
+            font-weight: 700; 
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* إضافة ظل خفيف لإبراز الاسم */
+        }
+
+        .hero { height: 100vh; background: linear-gradient(rgba(26, 26, 26, 0.7), rgba(26, 26, 26, 0.7)), url('https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1920&q=80') center/cover; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--pure-white); padding: 20px; }
+        /* إبعاد النص قليلاً للأسفل لكي لا يتداخل مع الشعار الكبير */
+        .hero h1 { font-size: 3rem; color: var(--primary-gold); margin-bottom: 15px; font-weight: 700; margin-top: 100px; }
+        .hero p { font-size: 1.2rem; margin-bottom: 30px; font-weight: 300; max-width: 600px; }
+
+        section { padding: 80px 20px; text-align: center; }
+        section h2 { color: var(--primary-gold); margin-bottom: 20px; font-size: 2rem; }
+        section p { color: var(--text-gray); line-height: 1.8; margin-bottom: 30px; max-width: 800px; margin-inline: auto;}
+
+        .contact-section { background-color: var(--pure-white); }
+        .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 1000px; margin: 0 auto; text-align: right; margin-top: 40px; }
+        .contact-info { display: flex; flex-direction: column; justify-content: center; gap: 25px; background: var(--soft-pink); padding: 30px; border-radius: 20px; }
+        .contact-item { display: flex; align-items: center; gap: 15px; font-size: 1.1rem; color: var(--dark-black); font-weight: 600; }
+        .contact-item i { font-style: normal; font-size: 1.5rem; }
+        .map-container { border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); height: 350px; width: 100%; }
+        .map-container iframe { width: 100%; height: 100%; border: none; }
+
+        footer { background-color: var(--dark-black); color: var(--pure-white); padding: 60px 20px 100px; text-align: center; }
+        .footer-content { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        
+        /* تكبير شعار الفوتر أيضاً */
+        .footer-logo { height: 100px; object-fit: contain; }
+        
+        .social-links { display: flex; gap: 20px; margin-top: 15px; }
+        .social-links a { color: var(--primary-gold); text-decoration: none; font-size: 1.1rem; transition: color 0.3s ease; font-weight: 600; }
+        .social-links a:hover { color: var(--pure-white); }
+        .copyright { margin-top: 30px; font-size: 0.9rem; color: #888; border-top: 1px solid #333; padding-top: 20px; width: 100%; }
+
+        .cta-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; z-index: 1000; width: 90%; max-width: 400px; }
+        .btn { flex: 1; padding: 15px; border-radius: 30px; text-align: center; text-decoration: none; font-weight: 600; font-size: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: transform 0.3s ease; }
+        .btn:active { transform: scale(0.95); }
+        .btn-book { background-color: var(--primary-gold); color: var(--pure-white); }
+        .btn-whatsapp { background-color: #25D366; color: var(--pure-white); }
+
+        /* ضبط حجم الشعار في شاشات الجوال */
+        @media (max-width: 768px) {
+            .contact-grid { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 2.2rem; margin-top: 120px; }
+            header { padding: 15px 10px; }
+            .logo-container img { height: 100px; } /* تصغير متناسب للجوال */
+            .logo-container h2 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="fade-in">
+        <a href="#" class="logo-container">
+            <!-- استخدام الرابط المباشر الخاص بك -->
+            <img id="dynamic-logo" src="https://tam74k.github.io/SalonReservation/logo.png" alt="شعار الصالون">
+            <h2 id="dynamic-header-name">جاري التحميل...</h2>
+        </a>
+    </header>
+
+    <div class="hero fade-in">
+        <h1 id="dynamic-hero-name">...</h1>
+        <p>تألقي بجمال يعكس فخامتكِ، في ملاذكِ الأنيق.</p>
+    </div>
+
+    <section class="slide-up">
+        <h2>عن الصالون</h2>
+        <p>نقدم لكِ تجربة متكاملة من الرفاهية والعناية الفائقة، باستخدام أحدث التقنيات وأفضل المنتجات العالمية لضمان إطلالة ساحرة تليق بكِ في كل مناسبة.</p>
+    </section>
+
+    <section class="slide-up" style="background-color: var(--pure-white);">
+        <h2>خدماتنا المميزة</h2>
+        <p>من العناية بالشعر والبشرة إلى تجهيز العرائس الاحترافي، دعي فريقنا من الخبراء يهتم بأدق تفاصيل جمالك في أجواء من الخصوصية والفخامة.</p>
+    </section>
+
+    <section class="contact-section slide-up">
+        <h2>موقعنا وتواصل معنا</h2>
+        <div class="contact-grid">
+            <div class="contact-info">
+                <div class="contact-item">
+                    <i>📍</i>
+                    <span id="dynamic-address">جاري تحميل العنوان...</span>
+                </div>
+                <div class="contact-item">
+                    <i>📞</i>
+                    <a href="#" id="dynamic-phone-link" style="color: inherit; text-decoration: none;">
+                        <span id="dynamic-phone">جاري تحميل الرقم...</span>
+                    </a>
+                </div>
+                <div class="contact-item">
+                    <i>✉️</i>
+                    <a href="#" id="dynamic-email-link" style="color: inherit; text-decoration: none;">
+                        <span id="dynamic-email">جاري تحميل البريد...</span>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="map-container" id="map-wrapper">
+                <iframe id="dynamic-map" src="" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+        </div>
+    </section>
+
+    <div class="cta-container fade-in">
+        <a href="#" id="floating-whatsapp-btn" class="btn btn-whatsapp" target="_blank">واتساب</a>
+        <a href="booking.html" class="btn btn-book">احجز موعدك الآن</a>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <!-- استخدام الرابط المباشر للفوتر أيضاً -->
+            <img id="dynamic-footer-logo" src="https://tam74k.github.io/SalonReservation/logo.png" alt="الشعار" class="footer-logo">
+            <h3 id="dynamic-footer-name" style="color: var(--primary-gold); font-size: 1.5rem;">...</h3>
+            <p>نصنع الجمال بحب وإتقان لنبرز أفضل ما فيكِ.</p>
+            
+            <div class="social-links">
+                <a href="#" id="dynamic-instagram" target="_blank">Instagram</a>
+                <span>|</span>
+                <a href="#" id="dynamic-snapchat" target="_blank">Snapchat</a>
+            </div>
+            
+            <div class="copyright">
+                &copy; <span id="current-year"></span> جميع الحقوق محفوظة لـ <span id="dynamic-copyright-name"></span>.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if(entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        });
+
+        document.querySelectorAll('.fade-in, .slide-up').forEach(el => observer.observe(el));
+        setTimeout(() => document.querySelector('.hero').classList.add('visible'), 100);
+
+        var SUPABASE_URL = 'https://xdusjjrslfslakcovrkf.supabase.co';
+        var SUPABASE_ANON_KEY = 'sb_publishable_o2oaEWqE-PJzWjqe6eDq9A_OTwi5Wg6';
+        var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function loadSalonSettings() {
+            try {
+                const { data: settings, error } = await supabase.from('salon_settings').select('*').limit(1).single();
+
+                if (error) throw error;
+                
+                if (settings) {
+                    const salonName = settings.salon_name || 'صالون تجميل';
+                    document.title = salonName;
+                    document.getElementById('dynamic-header-name').innerText = salonName;
+                    document.getElementById('dynamic-hero-name').innerText = salonName;
+                    document.getElementById('dynamic-footer-name').innerText = salonName;
+                    document.getElementById('dynamic-copyright-name').innerText = salonName;
+                    
+                    // لن نقوم بتغيير الشعار من قاعدة البيانات إذا كان فارغاً لكي يبقى الشعار الافتراضي الذي وضعناه
+                    if (settings.logo_url && settings.logo_url.trim() !== '') {
+                        document.getElementById('dynamic-logo').src = settings.logo_url;
+                        document.getElementById('dynamic-footer-logo').src = settings.logo_url;
+                    }
+
+                    document.getElementById('dynamic-address').innerText = settings.address_text;
+                    document.getElementById('dynamic-phone').innerText = settings.contact_phone;
+                    document.getElementById('dynamic-phone-link').href = `tel:${settings.contact_phone}`;
+                    document.getElementById('dynamic-email').innerText = settings.contact_email;
+                    document.getElementById('dynamic-email-link').href = `mailto:${settings.contact_email}`;
+
+                    if (settings.contact_phone) {
+                        const waNumber = settings.contact_phone.replace(/\D/g, ''); 
+                        document.getElementById('floating-whatsapp-btn').href = `https://wa.me/${waNumber}`;
+                    }
+
+                    if (settings.map_embed_url) {
+                        const mapUrl = settings.map_embed_url;
+                        if (mapUrl.includes('google.com/maps/embed')) {
+                            document.getElementById('dynamic-map').src = mapUrl;
+                        } else {
+                            document.getElementById('map-wrapper').innerHTML = `
+                                <div style="display: flex; flex-direction: column; height: 100%; align-items: center; justify-content: center; background: var(--soft-pink); border-radius: 20px; text-align: center; padding: 20px;">
+                                    <span style="font-size: 3rem; margin-bottom: 15px;">📍</span>
+                                    <h3 style="color: var(--primary-gold); margin-bottom: 15px;">موقع الصالون</h3>
+                                    <a href="${mapUrl}" target="_blank" class="btn btn-book" style="padding: 12px 30px; display: inline-block;">عرض على خرائط جوجل</a>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    document.getElementById('dynamic-instagram').href = settings.instagram_url || '#';
+                    document.getElementById('dynamic-snapchat').href = settings.snapchat_url || '#';
+                }
+            } catch (err) {
+                console.error("خطأ في جلب بيانات الصالون:", err.message);
+                document.getElementById('dynamic-header-name').innerText = 'صالون تجميل';
+                document.getElementById('dynamic-hero-name').innerText = 'صالون تجميل';
+            }
+        }
+
+        document.getElementById('current-year').innerText = new Date().getFullYear();
+        document.addEventListener('DOMContentLoaded', loadSalonSettings);
+    </script>
+</body>
+</html>
