@@ -6,6 +6,10 @@
     <title>حجز موعد | نظام الخطوات</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Berkshire+Swash&display=swap" rel="stylesheet">
+    
+    <!-- أيقونة المتصفح الديناميكية -->
+    <link id="dynamic-favicon" rel="icon" href="">
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
@@ -93,7 +97,7 @@
         <div class="progress-container">
             <div class="step-circle active" id="indicator-1">1<div class="step-label">البيانات</div></div>
             <div class="step-circle" id="indicator-2">2<div class="step-label">الخدمات</div></div>
-            <div class="step-circle" id="indicator-3">3<div class="step-label">الفرع والفنية</div></div>
+            <div class="step-circle" id="indicator-3">3<div class="step-label">الفرع والفني</div></div>
             <div class="step-circle" id="indicator-4">4<div class="step-label">الوقت</div></div>
             <div class="step-circle" id="indicator-5">5<div class="step-label">المراجعة</div></div>
         </div>
@@ -130,14 +134,14 @@
 
             <!-- Step 3: Branch, Date & Staff -->
             <div class="step-content" id="step-3">
-                <h3 class="step-title">تحديد الفرع والتاريخ واختيار الفنية</h3>
+                <h3 class="step-title">تحديد الفرع والتاريخ واختيار الفني</h3>
                 
                 <h4 style="margin: 0 0 10px;">الفرع:</h4>
                 <div class="grid-options" id="branches-container" style="margin-bottom: 25px;">
                     <div style="grid-column: 1/-1; color: gray; text-align: center;">جاري تحميل الفروع...</div>
                 </div>
 
-                <label>تاريخ الحجز (اختر التاريخ لظهور الخبيرات المتاحين)</label>
+                <label>تاريخ الحجز (اختر التاريخ لظهور الخبراء المتاحين)</label>
                 <input type="date" id="booking_date" required>
                 
                 <h4 style="margin: 15px 0 10px;">الخبراء المتاحون:</h4>
@@ -233,9 +237,13 @@
                 const { data: settings } = await supabase.from('salon_settings').select('*').limit(1).single();
                 if (settings) {
                     document.getElementById('dynamic-salon-name').innerText = settings.salon_name || '';
-                    if (settings.logo_url) {
+                    if (settings.logo_url && settings.logo_url.trim() !== '') {
                         const logo = document.getElementById('dynamic-logo');
                         logo.src = settings.logo_url; logo.style.display = 'block';
+                        
+                        // تحديث أيقونة المتصفح Favicon
+                        const favicon = document.getElementById('dynamic-favicon');
+                        if (favicon) favicon.href = settings.logo_url;
                     }
                     maxBookingsPerHour = settings.max_bookings_per_hour || 2;
                     salonCurrency = settings.currency || 'ج.م';
@@ -249,7 +257,6 @@
                     };
                 }
 
-                // جلب الخدمات
                 const { data: services } = await supabase.from('services').select('*').order('category', { ascending: true });
                 if(services) {
                     allServices = services;
@@ -257,7 +264,6 @@
                     renderCategories();
                 }
 
-                // جلب الفروع
                 const { data: branches } = await supabase.from('branches').select('*');
                 const branchesContainer = document.getElementById('branches-container');
                 branchesContainer.innerHTML = '';
@@ -271,7 +277,6 @@
                             div.classList.add('selected');
                             selectedBranch = { id: br.id, name: br.name };
                             
-                            // إعادة تقييم الأوقات المتاحة إذا تم تغيير الفرع بعد اختيار التاريخ
                             if(document.getElementById('booking_date').value && selectedStaff) {
                                 loadAvailableTimes();
                             }
@@ -389,7 +394,6 @@
                             div.classList.add('selected');
                             selectedStaff = { id: st.id, name: st.name };
                             
-                            // تحديث الأوقات في حال تم تغيير الفني
                             if(selectedBranch) loadAvailableTimes();
                         };
                         staffContainer.appendChild(div);
@@ -411,7 +415,6 @@
             const { data: blocked } = await supabase.from('blocked_hours').select('blocked_time').eq('blocked_date', date);
             const blockedTimes = blocked ? blocked.map(b => b.blocked_time.substring(0,5)) : [];
             
-            // فحص السعة الاستيعابية بناءً على الفرع المحدد في هذا التاريخ
             const { data: bookings } = await supabase.from('bookings').select('booking_time')
                 .eq('booking_date', date)
                 .eq('branch_id', selectedBranch.id);
@@ -425,7 +428,6 @@
             workingHours.forEach(time => {
                 const div = document.createElement('div');
                 div.className = 'card-option';
-                // إيقاف الوقت إذا تجاوز الفرع الحد الأقصى أو كان مغلقاً
                 let isBlocked = blockedTimes.includes(time) || (bookingCounts[time] || 0) >= maxBookingsPerHour;
 
                 if (isBlocked) {
@@ -459,7 +461,7 @@
                 if (!document.getElementById('booking_date').value || !selectedStaff) {
                     alert('الرجاء اختيار التاريخ وتحديد الخبير.'); return;
                 }
-                loadAvailableTimes(); // تجهيز الأوقات للخطوة القادمة
+                loadAvailableTimes(); 
             } else if (currentStep === 4) {
                 if (!selectedTime) {
                     alert('الرجاء تحديد وقت الحجز.'); return;
@@ -531,7 +533,7 @@
             const date = document.getElementById('booking_date').value;
 
             try {
-                // 1. إدراج رأس الحجز (Master Record) مع حفظ الـ branch_id واسترجاع كود الحجز UUID
+                // إدراج رأس الحجز
                 const { data: bookingData, error: bookingError } = await supabase.from('bookings').insert([{
                     customer_name: name, 
                     phone: formattedPhone, 
@@ -544,20 +546,19 @@
                 
                 if (bookingError) throw bookingError;
                 
-                const bookingId = bookingData[0].id; // الحصول على رقم الحجز
+                const bookingId = bookingData[0].id; 
 
-                // 2. إدراج تفاصيل الحجز (Detail Records) في جدول sub_reservation سطر بسطر
+                // إدراج تفاصيل الحجز
                 const subReservations = selectedServices.map(srv => ({
                     reservation_id: bookingId,
-                    service_id: srv.id,       // كود الخدمة
-                    service_name: srv.name,   // اسم الخدمة
-                    price: srv.price          // السعر
+                    service_id: srv.id,
+                    service_name: srv.name,
+                    price: srv.price
                 }));
 
                 const { error: subError } = await supabase.from('sub_reservation').insert(subReservations);
                 if (subError) throw subError;
 
-                // إظهار رسالة النجاح
                 document.getElementById('main-container').style.display = 'none';
                 document.getElementById('success-msg').style.display = 'block';
 
