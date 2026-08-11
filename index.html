@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صالون ومركز تجميل</title>
+    <title>صالون وحلاقة رجالي</title>
       <!-- استدعاء خط Cairo الأساسي -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
     <!-- استدعاء خط Berkshire Swash لاسم الصالون -->
@@ -13,7 +13,7 @@
     <style>
         :root {
             --primary-gold: #D4AF37;
-            --soft-pink: #F8E7E9;
+            --soft-pink: #F5F5F5; /* تم تغيير الوردي إلى لون محايد يناسب الرجال (رمادي فاتح جداً) */
             --dark-black: #1A1A1A;
             --pure-white: #FFFFFF;
             --text-gray: #4A4A4A;
@@ -26,18 +26,19 @@
         .fade-in.visible { opacity: 1; }
         .slide-up { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
         .slide-up.visible { opacity: 1; transform: translateY(0); }
-/* تخصيص خط اسم الصالون باللغة الإنجليزية */
-#dynamic-header-name,
-#dynamic-hero-name,
-#dynamic-footer-name {
-    font-family: 'Berkshire Swash', serif;
-    letter-spacing: 1px; /* مسافة بسيطة بين الحروف لزيادة الفخامة */
-}
-        /* تعديلات الهيدر والشعار للظهور في المنتصف وبحجم كبير */
+
+        /* تخصيص خط اسم الصالون باللغة الإنجليزية */
+        #dynamic-header-name,
+        #dynamic-hero-name,
+        #dynamic-footer-name {
+            font-family: 'Berkshire Swash', serif;
+            letter-spacing: 1px;
+        }
+
         header { position: absolute; top: 0; left: 0; right: 0; padding: 25px 20px; display: flex; justify-content: center; align-items: center; z-index: 10; width: 100%; }
         .logo-container { 
             display: flex; 
-            flex-direction: column; /* جعل الشعار فوق الاسم */
+            flex-direction: column; 
             align-items: center; 
             justify-content: center; 
             gap: 10px; 
@@ -48,22 +49,10 @@
             backdrop-filter: blur(8px); 
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-        .logo-container img { 
-            height: 140px; /* تكبير الشعار بشكل ملحوظ */
-            width: auto; 
-            max-width: 100%;
-            object-fit: contain; 
-        }
-        .logo-container h2 { 
-            font-size: 1.8rem; 
-            margin: 0; 
-            color: var(--primary-gold); 
-            font-weight: 700; 
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* إضافة ظل خفيف لإبراز الاسم */
-        }
+        .logo-container img { height: 140px; width: auto; max-width: 100%; object-fit: contain; }
+        .logo-container h2 { font-size: 1.8rem; margin: 0; color: var(--primary-gold); font-weight: 700; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
 
-        .hero { height: 100vh; background: linear-gradient(rgba(26, 26, 26, 0.7), rgba(26, 26, 26, 0.7)), url('https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1920&q=80') center/cover; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--pure-white); padding: 20px; }
-        /* إبعاد النص قليلاً للأسفل لكي لا يتداخل مع الشعار الكبير */
+        .hero { height: 100vh; background: linear-gradient(rgba(26, 26, 26, 0.8), rgba(26, 26, 26, 0.8)), url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=1920&q=80') center/cover; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--pure-white); padding: 20px; }
         .hero h1 { font-size: 3rem; color: var(--primary-gold); margin-bottom: 15px; font-weight: 700; margin-top: 100px; }
         .hero p { font-size: 1.2rem; margin-bottom: 30px; font-weight: 300; max-width: 600px; }
 
@@ -71,21 +60,37 @@
         section h2 { color: var(--primary-gold); margin-bottom: 20px; font-size: 2rem; }
         section p { color: var(--text-gray); line-height: 1.8; margin-bottom: 30px; max-width: 800px; margin-inline: auto;}
 
-        .contact-section { background-color: var(--pure-white); }
-        .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 1000px; margin: 0 auto; text-align: right; margin-top: 40px; }
-        .contact-info { display: flex; flex-direction: column; justify-content: center; gap: 25px; background: var(--soft-pink); padding: 30px; border-radius: 20px; }
-        .contact-item { display: flex; align-items: center; gap: 15px; font-size: 1.1rem; color: var(--dark-black); font-weight: 600; }
-        .contact-item i { font-style: normal; font-size: 1.5rem; }
-        .map-container { border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); height: 350px; width: 100%; }
+        /* تصميم قسم الفروع الجديد */
+        .branches-section { background-color: var(--pure-white); }
+        .branches-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; max-width: 1000px; margin: 0 auto; margin-top: 40px; }
+        .branch-card { background: var(--soft-pink); border: 2px solid transparent; padding: 30px 20px; border-radius: 15px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .branch-card:hover { border-color: var(--primary-gold); transform: translateY(-5px); background: #FCF9EE; }
+        .branch-card h3 { color: var(--dark-black); margin-bottom: 15px; font-size: 1.3rem; }
+        .branch-card span { display: inline-block; padding: 8px 20px; background: var(--dark-black); color: var(--primary-gold); border-radius: 20px; font-size: 0.9rem; font-weight: 600; }
+
+        /* تصميم نافذة الفرع (Modal) */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(5px); opacity: 0; transition: opacity 0.3s ease; }
+        .modal.active { display: flex; opacity: 1; }
+        .modal-content { background: var(--pure-white); width: 100%; max-width: 600px; border-radius: 20px; padding: 30px; position: relative; text-align: right; transform: translateY(20px); transition: transform 0.3s ease; }
+        .modal.active .modal-content { transform: translateY(0); }
+        .close-modal { position: absolute; top: 20px; left: 20px; font-size: 2rem; color: var(--text-gray); cursor: pointer; transition: 0.2s; line-height: 1; }
+        .close-modal:hover { color: #ff4d4d; }
+        .modal-title { color: var(--primary-gold); font-size: 1.8rem; margin-bottom: 20px; border-bottom: 2px solid var(--soft-pink); padding-bottom: 10px; }
+        .modal-info { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; font-size: 1.1rem; color: var(--dark-black); font-weight: 600; }
+        .map-container { border-radius: 15px; overflow: hidden; height: 300px; width: 100%; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .map-container iframe { width: 100%; height: 100%; border: none; }
 
         footer { background-color: var(--dark-black); color: var(--pure-white); padding: 60px 20px 100px; text-align: center; }
-        .footer-content { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 20px; }
-        
-        /* تكبير شعار الفوتر أيضاً */
+        .footer-content { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 20px; }
         .footer-logo { height: 100px; object-fit: contain; }
         
-        .social-links { display: flex; gap: 20px; margin-top: 15px; }
+        /* تصميم فروع الفوتر */
+        .footer-branches-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; width: 100%; margin-top: 30px; text-align: right; border-top: 1px solid #333; padding-top: 40px; }
+        .footer-branch-item { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; border-right: 3px solid var(--primary-gold); }
+        .footer-branch-item h4 { color: var(--primary-gold); margin-bottom: 10px; font-size: 1.1rem; }
+        .footer-branch-item p { color: #ccc; font-size: 0.95rem; margin-bottom: 8px; line-height: 1.5; }
+
+        .social-links { display: flex; gap: 20px; margin-top: 30px; }
         .social-links a { color: var(--primary-gold); text-decoration: none; font-size: 1.1rem; transition: color 0.3s ease; font-weight: 600; }
         .social-links a:hover { color: var(--pure-white); }
         .copyright { margin-top: 30px; font-size: 0.9rem; color: #888; border-top: 1px solid #333; padding-top: 20px; width: 100%; }
@@ -96,13 +101,14 @@
         .btn-book { background-color: var(--primary-gold); color: var(--pure-white); }
         .btn-whatsapp { background-color: #25D366; color: var(--pure-white); }
 
-        /* ضبط حجم الشعار في شاشات الجوال */
         @media (max-width: 768px) {
-            .contact-grid { grid-template-columns: 1fr; }
             .hero h1 { font-size: 2.2rem; margin-top: 120px; }
             header { padding: 15px 10px; }
-            .logo-container img { height: 100px; } /* تصغير متناسب للجوال */
+            .logo-container img { height: 100px; }
             .logo-container h2 { font-size: 1.4rem; }
+            .modal-content { padding: 20px; }
+            .footer-branches-grid { text-align: center; }
+            .footer-branch-item { border-right: none; border-bottom: 3px solid var(--primary-gold); }
         }
     </style>
 </head>
@@ -110,7 +116,6 @@
 
     <header class="fade-in">
         <a href="#" class="logo-container">
-            <!-- استخدام الرابط المباشر الخاص بك -->
             <img id="dynamic-logo" src="https://tam74k.github.io/SalonReservation/logo.png" alt="شعار الصالون">
             <h2 id="dynamic-header-name">جاري التحميل...</h2>
         </a>
@@ -118,59 +123,60 @@
 
     <div class="hero fade-in">
         <h1 id="dynamic-hero-name">...</h1>
-        <p>تألقي بجمال يعكس فخامتكِ، في ملاذكِ الأنيق.</p>
+        <!-- تم تعديل النصوص لتناسب الرجال -->
+        <p>تألق بمظهر يعكس فخامتك، في مكانك الأنيق.</p>
     </div>
 
     <section class="slide-up">
         <h2>عن الصالون</h2>
-        <p>نقدم لكِ تجربة متكاملة من الرفاهية والعناية الفائقة، باستخدام أحدث التقنيات وأفضل المنتجات العالمية لضمان إطلالة ساحرة تليق بكِ في كل مناسبة.</p>
+        <p>نقدم لك تجربة متكاملة من الرفاهية والعناية الفائقة، باستخدام أحدث التقنيات وأفضل المنتجات العالمية لضمان إطلالة ساحرة تليق بك في كل مناسبة.</p>
     </section>
 
     <section class="slide-up" style="background-color: var(--pure-white);">
         <h2>خدماتنا المميزة</h2>
-        <p>من العناية بالشعر والبشرة إلى تجهيز العرائس الاحترافي، دعي فريقنا من الخبراء يهتم بأدق تفاصيل جمالك في أجواء من الخصوصية والفخامة.</p>
+        <p>من العناية بالشعر واللحية إلى تجهيز العرسان الاحترافي، دع فريقنا من الخبراء يهتم بأدق تفاصيل أناقتك في أجواء من الخصوصية والفخامة.</p>
     </section>
 
-    <section class="contact-section slide-up">
-        <h2>موقعنا وتواصل معنا</h2>
-        <div class="contact-grid">
-            <div class="contact-info">
-                <div class="contact-item">
-                    <i>📍</i>
-                    <span id="dynamic-address">جاري تحميل العنوان...</span>
-                </div>
-                <div class="contact-item">
-                    <i>📞</i>
-                    <a href="#" id="dynamic-phone-link" style="color: inherit; text-decoration: none;">
-                        <span id="dynamic-phone">جاري تحميل الرقم...</span>
-                    </a>
-                </div>
-                <div class="contact-item">
-                    <i>✉️</i>
-                    <a href="#" id="dynamic-email-link" style="color: inherit; text-decoration: none;">
-                        <span id="dynamic-email">جاري تحميل البريد...</span>
-                    </a>
-                </div>
-            </div>
-            
-            <div class="map-container" id="map-wrapper">
-                <iframe id="dynamic-map" src="" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-            </div>
+    <!-- قسم الفروع الجديد -->
+    <section class="branches-section slide-up">
+        <h2>فروعنا</h2>
+        <p>اختر الفرع الأقرب إليك واستمتع بتجربة حلاقة استثنائية.</p>
+        <div class="branches-grid" id="branches-container">
+            <p style="grid-column: 1/-1; color: gray;">جاري تحميل الفروع...</p>
         </div>
     </section>
 
+    <!-- نافذة تفاصيل الفرع (Modal) -->
+    <div id="branch-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-modal-btn">&times;</span>
+            <h2 class="modal-title" id="modal-branch-name">اسم الفرع</h2>
+            <div class="modal-info">
+                <div>📍 <span id="modal-branch-address"></span></div>
+                <div>📞 <a href="#" id="modal-branch-phone-link" style="color: inherit; text-decoration: none;"><span id="modal-branch-phone" dir="ltr"></span></a></div>
+            </div>
+            <div class="map-container" id="modal-branch-map-wrapper">
+                <iframe id="modal-branch-map" src="" allowfullscreen="" loading="lazy"></iframe>
+            </div>
+        </div>
+    </div>
+
     <div class="cta-container fade-in">
-        <a href="#" id="floating-whatsapp-btn" class="btn btn-whatsapp" target="_blank">واتساب</a>
+        <a href="#" id="floating-whatsapp-btn" class="btn btn-whatsapp" target="_blank">واتساب الإدارة</a>
         <a href="booking.html" class="btn btn-book">احجز موعدك الآن</a>
     </div>
 
     <footer>
         <div class="footer-content">
-            <!-- استخدام الرابط المباشر للفوتر أيضاً -->
             <img id="dynamic-footer-logo" src="https://tam74k.github.io/SalonReservation/logo.png" alt="الشعار" class="footer-logo">
             <h3 id="dynamic-footer-name" style="color: var(--primary-gold); font-size: 1.5rem;">...</h3>
-            <p>نصنع الجمال بحب وإتقان لنبرز أفضل ما فيكِ.</p>
+            <p>نصنع الأناقة بحب وإتقان لنبرز أفضل ما فيك.</p>
             
+            <!-- شبكة الفروع في الفوتر -->
+            <div class="footer-branches-grid" id="footer-branches-container">
+                <!-- سيتم حقن الفروع هنا -->
+            </div>
+
             <div class="social-links">
                 <a href="#" id="dynamic-instagram" target="_blank">Instagram</a>
                 <span>|</span>
@@ -201,57 +207,99 @@
 
         async function loadSalonSettings() {
             try {
+                // جلب الإعدادات الأساسية
                 const { data: settings, error } = await supabase.from('salon_settings').select('*').limit(1).single();
 
-                if (error) throw error;
-                
-                if (settings) {
-                    const salonName = settings.salon_name || 'صالون تجميل';
+                if (settings && !error) {
+                    const salonName = settings.salon_name || 'صالون حلاقة';
                     document.title = salonName;
                     document.getElementById('dynamic-header-name').innerText = salonName;
                     document.getElementById('dynamic-hero-name').innerText = salonName;
                     document.getElementById('dynamic-footer-name').innerText = salonName;
                     document.getElementById('dynamic-copyright-name').innerText = salonName;
                     
-                    // لن نقوم بتغيير الشعار من قاعدة البيانات إذا كان فارغاً لكي يبقى الشعار الافتراضي الذي وضعناه
                     if (settings.logo_url && settings.logo_url.trim() !== '') {
                         document.getElementById('dynamic-logo').src = settings.logo_url;
                         document.getElementById('dynamic-footer-logo').src = settings.logo_url;
                     }
-
-                    document.getElementById('dynamic-address').innerText = settings.address_text;
-                    document.getElementById('dynamic-phone').innerText = settings.contact_phone;
-                    document.getElementById('dynamic-phone-link').href = `tel:${settings.contact_phone}`;
-                    document.getElementById('dynamic-email').innerText = settings.contact_email;
-                    document.getElementById('dynamic-email-link').href = `mailto:${settings.contact_email}`;
 
                     if (settings.contact_phone) {
                         const waNumber = settings.contact_phone.replace(/\D/g, ''); 
                         document.getElementById('floating-whatsapp-btn').href = `https://wa.me/${waNumber}`;
                     }
 
-                    if (settings.map_embed_url) {
-                        const mapUrl = settings.map_embed_url;
-                        if (mapUrl.includes('google.com/maps/embed')) {
-                            document.getElementById('dynamic-map').src = mapUrl;
-                        } else {
-                            document.getElementById('map-wrapper').innerHTML = `
-                                <div style="display: flex; flex-direction: column; height: 100%; align-items: center; justify-content: center; background: var(--soft-pink); border-radius: 20px; text-align: center; padding: 20px;">
-                                    <span style="font-size: 3rem; margin-bottom: 15px;">📍</span>
-                                    <h3 style="color: var(--primary-gold); margin-bottom: 15px;">موقع الصالون</h3>
-                                    <a href="${mapUrl}" target="_blank" class="btn btn-book" style="padding: 12px 30px; display: inline-block;">عرض على خرائط جوجل</a>
-                                </div>
-                            `;
-                        }
-                    }
-
                     document.getElementById('dynamic-instagram').href = settings.instagram_url || '#';
                     document.getElementById('dynamic-snapchat').href = settings.snapchat_url || '#';
                 }
+
+                // جلب الفروع
+                const { data: branches, error: branchesError } = await supabase.from('branches').select('*');
+                const branchesContainer = document.getElementById('branches-container');
+                const footerBranchesContainer = document.getElementById('footer-branches-container');
+                
+                if (branches && !branchesError) {
+                    branchesContainer.innerHTML = '';
+                    footerBranchesContainer.innerHTML = '';
+
+                    branches.forEach(branch => {
+                        // 1. إضافة كروت الفروع في الصفحة
+                        const card = document.createElement('div');
+                        card.className = 'branch-card';
+                        card.innerHTML = `<h3>${branch.name}</h3><span>عرض التفاصيل والاتجاهات</span>`;
+                        card.onclick = () => openBranchModal(branch);
+                        branchesContainer.appendChild(card);
+
+                        // 2. إضافة الفروع في الفوتر
+                        const fItem = document.createElement('div');
+                        fItem.className = 'footer-branch-item';
+                        fItem.innerHTML = `
+                            <h4>${branch.name}</h4>
+                            <p>📍 ${branch.address || 'العنوان غير متوفر'}</p>
+                            <p>📞 <span dir="ltr">+${branch.phone || ''}</span></p>
+                        `;
+                        footerBranchesContainer.appendChild(fItem);
+                    });
+                }
             } catch (err) {
-                console.error("خطأ في جلب بيانات الصالون:", err.message);
-                document.getElementById('dynamic-header-name').innerText = 'صالون تجميل';
-                document.getElementById('dynamic-hero-name').innerText = 'صالون تجميل';
+                console.error("خطأ في جلب البيانات:", err.message);
+                document.getElementById('dynamic-header-name').innerText = 'صالون حلاقة';
+            }
+        }
+
+        // منطق التحكم في النافذة المنبثقة (Modal)
+        const modal = document.getElementById('branch-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+
+        function openBranchModal(branch) {
+            document.getElementById('modal-branch-name').innerText = branch.name;
+            document.getElementById('modal-branch-address').innerText = branch.address || 'غير متوفر';
+            document.getElementById('modal-branch-phone').innerText = `+${branch.phone || ''}`;
+            document.getElementById('modal-branch-phone-link').href = `tel:+${branch.phone || ''}`;
+            
+            const mapWrapper = document.getElementById('modal-branch-map-wrapper');
+            const mapIframe = document.getElementById('modal-branch-map');
+            
+            if (branch.map_embed_url && branch.map_embed_url.trim() !== '') {
+                mapIframe.src = branch.map_embed_url;
+                mapWrapper.style.display = 'block';
+            } else {
+                mapIframe.src = '';
+                mapWrapper.style.display = 'none';
+            }
+            
+            modal.classList.add('active');
+        }
+
+        closeModalBtn.onclick = () => {
+            modal.classList.remove('active');
+            document.getElementById('modal-branch-map').src = ''; // إيقاف تحميل الخريطة عند الإغلاق
+        }
+
+        // إغلاق النافذة عند الضغط خارجها
+        window.onclick = (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+                document.getElementById('modal-branch-map').src = '';
             }
         }
 
