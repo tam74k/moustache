@@ -1,0 +1,178 @@
+-- ========================================================
+-- 1. تفعيل إضافة الـ UUID (أساسية لجدول الحجوزات)
+-- ========================================================
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- ========================================================
+-- 2. حذف الجداول القديمة (لضمان بناء هيكل نظيف بالكامل)
+-- ========================================================
+DROP TABLE IF EXISTS sub_reservation CASCADE;
+DROP TABLE IF EXISTS bookings CASCADE;
+DROP TABLE IF EXISTS blocked_hours CASCADE;
+DROP TABLE IF EXISTS staff_leaves CASCADE;
+DROP TABLE IF EXISTS staff CASCADE;
+DROP TABLE IF EXISTS services CASCADE;
+DROP TABLE IF EXISTS branches CASCADE;
+DROP TABLE IF EXISTS salon_settings CASCADE;
+
+-- ========================================================
+-- 3. إنشاء الجداول بالهيكلية الجديدة
+-- ========================================================
+
+-- أ) جدول إعدادات الصالون الشاملة
+CREATE TABLE salon_settings (
+    id SERIAL PRIMARY KEY,
+    max_bookings_per_hour INT NOT NULL DEFAULT 3,
+    salon_name VARCHAR(255) DEFAULT 'Hadeer MoheP',
+    logo_url TEXT DEFAULT 'https://tam74k.github.io/SalonReservation/logo.png',
+    hero_bg_url TEXT DEFAULT 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=1920&q=80',
+    address_text TEXT DEFAULT 'شارع البطل أحمد عبدالعزيز، المهندسين، الجيزة',
+    map_embed_url TEXT DEFAULT 'https://www.google.com/maps/embed?pb=...',
+    contact_phone VARCHAR(50) DEFAULT '201014889704',
+    contact_email VARCHAR(100) DEFAULT 'info@hadeermohep.com',
+    facebook_url TEXT DEFAULT 'https://facebook.com',
+    instagram_url TEXT DEFAULT 'https://instagram.com',
+    snapchat_url TEXT DEFAULT 'https://snapchat.com',
+    currency VARCHAR(20) DEFAULT 'ج.م',
+    evo_api_url VARCHAR(255) DEFAULT 'https://evo.101488.xyz',
+    evo_instance_name VARCHAR(100) DEFAULT 'TamerMostafa',
+    evo_api_key VARCHAR(255) DEFAULT '78518239685A-4904-A7C3-827767FA2EEE',
+    whatsapp_msg_template TEXT DEFAULT 'أهلاً بك {name} ✨
+تم تسجيل طلب حجزك.
+
+الفرع: {branch}
+الخدمات: {services}
+التاريخ: {date}
+الوقت: {time}
+الإجمالي: {price} {currency}
+
+ننتظرك في الموعد! 💈',
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- ب) جدول الفروع (مع مواعيد العمل)
+CREATE TABLE branches (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    address TEXT,
+    phone VARCHAR(50),
+    map_embed_url TEXT,
+    open_time TIME DEFAULT '13:00:00',
+    close_time TIME DEFAULT '23:00:00',
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- ج) جدول الخدمات (مربوط بالفرع)
+CREATE TABLE services (
+    id SERIAL PRIMARY KEY,
+    branch_id INT REFERENCES branches(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    description TEXT,
+    category VARCHAR(100) DEFAULT 'عام'
+);
+
+-- د) جدول طاقم العمل / الفنيين (مربوط بالفرع)
+CREATE TABLE staff (
+    id SERIAL PRIMARY KEY,
+    branch_id INT REFERENCES branches(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    photo_url TEXT
+);
+
+-- هـ) جدول الإجازات
+CREATE TABLE staff_leaves (
+    id SERIAL PRIMARY KEY,
+    staff_id INT REFERENCES staff(id) ON DELETE CASCADE,
+    leave_date DATE NOT NULL
+);
+
+-- و) جدول الساعات المغلقة من قِبل الإدارة
+CREATE TABLE blocked_hours (
+    id SERIAL PRIMARY KEY,
+    blocked_date DATE NOT NULL,
+    blocked_time TIME NOT NULL
+);
+
+-- ز) جدول الحجوزات الأساسي (Master)
+CREATE TABLE bookings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    branch_id INT REFERENCES branches(id) ON DELETE RESTRICT,
+    customer_name VARCHAR(255) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    booking_date DATE NOT NULL,
+    booking_time TIME NOT NULL,
+    total_price DECIMAL(10, 2) NOT NULL,
+    staff_id INT REFERENCES staff(id) ON DELETE SET NULL, -- يقبل Null لاختيار "غير محدد"
+    status VARCHAR(50) DEFAULT 'pending', -- الحالات: pending, confirmed, completed, cancelled
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- ح) جدول تفاصيل الحجز للخدمات (Detail - لسكربت FileMaker)
+CREATE TABLE sub_reservation (
+    id SERIAL PRIMARY KEY,
+    reservation_id UUID REFERENCES bookings(id) ON DELETE CASCADE,
+    service_id INT REFERENCES services(id) ON DELETE CASCADE,
+    service_name VARCHAR(255) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- ========================================================
+-- 4. إعداد سياسات الأمان للقراءة والكتابة (RLS)
+-- ========================================================
+ALTER TABLE salon_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE branches ENABLE ROW LEVEL SECURITY;
+ALTER TABLE services ENABLE ROW LEVEL SECURITY;
+ALTER TABLE staff ENABLE ROW LEVEL SECURITY;
+ALTER TABLE staff_leaves ENABLE ROW LEVEL SECURITY;
+ALTER TABLE blocked_hours ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sub_reservation ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public read on salon_settings" ON salon_settings FOR SELECT USING (true);
+CREATE POLICY "Allow public read on branches" ON branches FOR SELECT USING (true);
+CREATE POLICY "Allow public read on services" ON services FOR SELECT USING (true);
+CREATE POLICY "Allow public read on staff" ON staff FOR SELECT USING (true);
+CREATE POLICY "Allow public read on staff_leaves" ON staff_leaves FOR SELECT USING (true);
+CREATE POLICY "Allow public read on blocked_hours" ON blocked_hours FOR SELECT USING (true);
+CREATE POLICY "Allow public read on bookings" ON bookings FOR SELECT USING (true);
+CREATE POLICY "Allow public insert on bookings" ON bookings FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public read on sub_reservation" ON sub_reservation FOR SELECT USING (true);
+CREATE POLICY "Allow public insert on sub_reservation" ON sub_reservation FOR INSERT WITH CHECK (true);
+
+-- ========================================================
+-- 5. إدراج البيانات الافتراضية (تجهيز النظام للعمل)
+-- ========================================================
+
+-- أ) الإعدادات العامة
+INSERT INTO salon_settings (max_bookings_per_hour) VALUES (3);
+
+-- ب) الفروع التجريبية
+INSERT INTO branches (name, address, phone, open_time, close_time) VALUES
+('فرع المهندسين (الرئيسي)', 'شارع البطل أحمد عبدالعزيز، المهندسين، الجيزة', '201014889704', '13:00:00', '23:00:00'),
+('فرع التجمع الخامس', 'شارع التسعين الشمالي، التجمع الخامس، القاهرة', '201000000000', '10:00:00', '22:00:00');
+
+-- ج) الخدمات (مربوطة بالفرع الأول - المهندسين)
+INSERT INTO services (branch_id, name, price, description, category) VALUES
+(1, 'حلاقة شعر وتدريج', 200.00, 'أحدث قصات الشعر والتدريج الاحترافي', 'الشعر'),
+(1, 'حلاقة ذقن بالبخار', 150.00, 'تحديد الذقن مع حمام بخار استرخائي', 'اللحية'),
+(1, 'صبغة شعر أو لحية', 300.00, 'تغيير لون الشعر أو اللحية بألوان طبيعية', 'الشعر'),
+(1, 'تنظيف بشرة عميق', 400.00, 'تنظيف بشرة بـ 7 مراحل لإزالة الرؤوس السوداء', 'العناية بالبشرة'),
+(1, 'باقة العريس VIP', 1500.00, 'باقة متكاملة لتجهيز العريس', 'الباقات');
+
+-- د) الخدمات (مربوطة بالفرع الثاني - التجمع) - بأسعار مختلفة
+INSERT INTO services (branch_id, name, price, description, category) VALUES
+(2, 'حلاقة شعر وتدريج', 250.00, 'أحدث قصات الشعر والتدريج الاحترافي', 'الشعر'),
+(2, 'حلاقة ذقن بالبخار', 200.00, 'تحديد الذقن مع حمام بخار', 'اللحية'),
+(2, 'باقة العريس VIP', 2000.00, 'باقة متكاملة للعريس', 'الباقات');
+
+-- هـ) فريق العمل (مقسمين على الفروع)
+INSERT INTO staff (branch_id, name, photo_url) VALUES
+(1, 'أحمد (كوافير)', 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'),
+(1, 'كريم (كوافير)', 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'),
+(2, 'محمود (كوافير)', 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png');
+
+-- ========================================================
+-- تم الانتهاء بنجاح!
+-- ========================================================
