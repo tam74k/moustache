@@ -6,10 +6,7 @@
     <title>حجز موعد | نظام الخطوات</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Berkshire+Swash&display=swap" rel="stylesheet">
-    
-    <!-- أيقونة المتصفح الديناميكية -->
     <link id="dynamic-favicon" rel="icon" href="">
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
@@ -93,18 +90,16 @@
     </header>
 
     <div class="booking-container" id="main-container">
-        <!-- Progress Bar -->
         <div class="progress-container">
             <div class="step-circle active" id="indicator-1">1<div class="step-label">البيانات</div></div>
             <div class="step-circle" id="indicator-2">2<div class="step-label">الخدمات</div></div>
-            <div class="step-circle" id="indicator-3">3<div class="step-label">الفرع والفني</div></div>
+            <div class="step-circle" id="indicator-3">3<div class="step-label">الفرع والخبير</div></div>
             <div class="step-circle" id="indicator-4">4<div class="step-label">الوقت</div></div>
             <div class="step-circle" id="indicator-5">5<div class="step-label">المراجعة</div></div>
         </div>
 
         <form id="wizard-form">
             
-            <!-- Step 1: Basic Info -->
             <div class="step-content active" id="step-1">
                 <h3 class="step-title">البيانات الأساسية</h3>
                 <label>الاسم الكريم</label>
@@ -113,10 +108,8 @@
                 <input type="tel" id="customer_phone" required placeholder="مثال: 010...">
             </div>
 
-            <!-- Step 2: Services -->
             <div class="step-content" id="step-2">
                 <h3 class="step-title">اختيار الخدمات</h3>
-                
                 <div class="categories-tabs" id="categories-container"></div>
                 <div class="grid-options" id="services-grid"></div>
 
@@ -132,31 +125,28 @@
                 </div>
             </div>
 
-            <!-- Step 3: Branch, Date & Staff -->
             <div class="step-content" id="step-3">
-                <h3 class="step-title">تحديد الفرع والتاريخ واختيار الفني</h3>
+                <h3 class="step-title">تحديد الفرع والتاريخ واختيار الخبير</h3>
                 
                 <h4 style="margin: 0 0 10px;">الفرع:</h4>
                 <div class="grid-options" id="branches-container" style="margin-bottom: 25px;">
                     <div style="grid-column: 1/-1; color: gray; text-align: center;">جاري تحميل الفروع...</div>
                 </div>
 
-                <label>تاريخ الحجز (اختر التاريخ لظهور الخبراء المتاحين)</label>
+                <label>تاريخ الحجز</label>
                 <input type="date" id="booking_date" required>
                 
-                <h4 style="margin: 15px 0 10px;">الخبراء المتاحون:</h4>
+                <h4 style="margin: 15px 0 10px;">الخبراء المتاحون (في الفرع المختار):</h4>
                 <div class="grid-options" id="staff-container">
-                    <div style="grid-column: 1/-1; color: gray; text-align: center;">يرجى اختيار التاريخ أولاً</div>
+                    <div style="grid-column: 1/-1; color: gray; text-align: center;">يرجى اختيار الفرع والتاريخ أولاً</div>
                 </div>
             </div>
 
-            <!-- Step 4: Time -->
             <div class="step-content" id="step-4">
                 <h3 class="step-title">اختيار وقت الحجز</h3>
                 <div class="grid-options" id="time-container"></div>
             </div>
 
-            <!-- Step 5: Review & Confirm -->
             <div class="step-content" id="step-5">
                 <h3 class="step-title">مراجعة بيانات الحجز</h3>
                 <div class="review-box">
@@ -177,7 +167,6 @@
                 </div>
             </div>
 
-            <!-- Navigation Buttons -->
             <div class="nav-buttons">
                 <button type="button" class="btn-nav btn-prev" id="btn-prev" style="display: none;" onclick="prevStep()">رجوع للخلف</button>
                 <button type="button" class="btn-nav btn-next" id="btn-next" onclick="nextStep()">التالي</button>
@@ -186,7 +175,6 @@
         </form>
     </div>
 
-    <!-- رسالة النجاح -->
     <div id="success-msg">
         <h2 style="margin-bottom: 15px;">🎉 تم تسجيل حجزك بنجاح!</h2>
         <br>
@@ -241,7 +229,6 @@
                         const logo = document.getElementById('dynamic-logo');
                         logo.src = settings.logo_url; logo.style.display = 'block';
                         
-                        // تحديث أيقونة المتصفح Favicon
                         const favicon = document.getElementById('dynamic-favicon');
                         if (favicon) favicon.href = settings.logo_url;
                     }
@@ -276,10 +263,7 @@
                             document.querySelectorAll('#branches-container .card-option').forEach(el => el.classList.remove('selected'));
                             div.classList.add('selected');
                             selectedBranch = { id: br.id, name: br.name };
-                            
-                            if(document.getElementById('booking_date').value && selectedStaff) {
-                                loadAvailableTimes();
-                            }
+                            updateStaffList();
                         };
                         branchesContainer.appendChild(div);
                     });
@@ -366,42 +350,75 @@
             document.getElementById('cart-total').innerText = totalPrice;
         }
 
-        document.getElementById('booking_date').addEventListener('change', async (e) => {
-            const date = e.target.value;
+        async function updateStaffList() {
+            const date = document.getElementById('booking_date').value;
             const staffContainer = document.getElementById('staff-container');
-            staffContainer.innerHTML = '<div style="grid-column: 1/-1;">جاري فحص المتاحين...</div>';
-            selectedStaff = null; 
+            const timeContainer = document.getElementById('time-container');
+            
+            timeContainer.innerHTML = '';
             selectedTime = null;
 
-            if (!date) return;
-
-            const { data: staff } = await supabase.from('staff').select('*');
-            const { data: leaves } = await supabase.from('staff_leaves').select('staff_id').eq('leave_date', date);
-            const leaveIds = leaves ? leaves.map(l => l.staff_id) : [];
-            
-            staffContainer.innerHTML = '';
-            let count = 0;
-
-            if (staff) {
-                staff.forEach(st => {
-                    if (!leaveIds.includes(st.id)) {
-                        count++;
-                        const div = document.createElement('div');
-                        div.className = 'card-option';
-                        div.innerHTML = `<img src="${st.photo_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" class="staff-img"><span>${st.name}</span>`;
-                        div.onclick = () => {
-                            document.querySelectorAll('#staff-container .card-option').forEach(el => el.classList.remove('selected'));
-                            div.classList.add('selected');
-                            selectedStaff = { id: st.id, name: st.name };
-                            
-                            if(selectedBranch) loadAvailableTimes();
-                        };
-                        staffContainer.appendChild(div);
-                    }
-                });
+            if (!selectedBranch) {
+                staffContainer.innerHTML = '<div style="grid-column: 1/-1; color: gray; text-align: center;">يرجى اختيار الفرع أولاً</div>';
+                return;
             }
-            if (count === 0) staffContainer.innerHTML = '<div style="grid-column: 1/-1; color:red;">نعتذر، لا يوجد خبراء متاحون في هذا التاريخ.</div>';
-        });
+            if (!date) {
+                staffContainer.innerHTML = '<div style="grid-column: 1/-1; color: gray; text-align: center;">يرجى اختيار التاريخ أولاً</div>';
+                return;
+            }
+
+            staffContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center;">جاري فحص الخبراء المتاحين...</div>';
+
+            try {
+                const { data: staff } = await supabase.from('staff').select('*').eq('branch_id', selectedBranch.id);
+                const { data: leaves } = await supabase.from('staff_leaves').select('staff_id').eq('leave_date', date);
+                const leaveIds = leaves ? leaves.map(l => l.staff_id) : [];
+                
+                staffContainer.innerHTML = '';
+
+                // إضافة خيار "غير محدد" كخيار افتراضي في البداية
+                const defaultDiv = document.createElement('div');
+                defaultDiv.className = 'card-option selected'; // جعله مختاراً كافتراضي
+                defaultDiv.innerHTML = `<img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" class="staff-img"><span>غير محدد</span>`;
+                defaultDiv.onclick = () => {
+                    document.querySelectorAll('#staff-container .card-option').forEach(el => el.classList.remove('selected'));
+                    defaultDiv.classList.add('selected');
+                    selectedStaff = { id: null, name: 'غير محدد (يحدد من قبل الإدارة)' };
+                    loadAvailableTimes();
+                };
+                staffContainer.appendChild(defaultDiv);
+                
+                // تعيين الحالة الافتراضية
+                selectedStaff = { id: null, name: 'غير محدد (يحدد من قبل الإدارة)' };
+
+                let count = 0;
+                if (staff && staff.length > 0) {
+                    staff.forEach(st => {
+                        if (!leaveIds.includes(st.id)) {
+                            count++;
+                            const div = document.createElement('div');
+                            div.className = 'card-option';
+                            div.innerHTML = `<img src="${st.photo_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" class="staff-img"><span>${st.name}</span>`;
+                            div.onclick = () => {
+                                document.querySelectorAll('#staff-container .card-option').forEach(el => el.classList.remove('selected'));
+                                div.classList.add('selected');
+                                selectedStaff = { id: st.id, name: st.name };
+                                loadAvailableTimes(); 
+                            };
+                            staffContainer.appendChild(div);
+                        }
+                    });
+                }
+                
+                // تشغيل جلب الأوقات مباشرة لأن "غير محدد" تم اختياره افتراضياً
+                loadAvailableTimes();
+
+            } catch (error) {
+                console.error("خطأ في جلب الخبراء:", error);
+            }
+        }
+
+        document.getElementById('booking_date').addEventListener('change', updateStaffList);
 
         async function loadAvailableTimes() {
             const date = document.getElementById('booking_date').value;
@@ -415,12 +432,26 @@
             const { data: blocked } = await supabase.from('blocked_hours').select('blocked_time').eq('blocked_date', date);
             const blockedTimes = blocked ? blocked.map(b => b.blocked_time.substring(0,5)) : [];
             
-            const { data: bookings } = await supabase.from('bookings').select('booking_time')
+            // جلب الحجوزات باستثناء الملغاة
+            const { data: bookings } = await supabase.from('bookings').select('booking_time, staff_id')
                 .eq('booking_date', date)
-                .eq('branch_id', selectedBranch.id);
+                .eq('branch_id', selectedBranch.id)
+                .neq('status', 'cancelled'); 
                 
-            const bookingCounts = {};
-            if(bookings) bookings.forEach(b => { const t = b.booking_time.substring(0,5); bookingCounts[t] = (bookingCounts[t] || 0) + 1; });
+            const branchBookingCounts = {};
+            const staffBookedHours = []; 
+
+            if(bookings) {
+                bookings.forEach(b => { 
+                    const t = b.booking_time.substring(0,5); 
+                    branchBookingCounts[t] = (branchBookingCounts[t] || 0) + 1; 
+                    
+                    // إذا اختار العميل خبيراً بعينه وكان هذا الخبير محجوزاً في هذا الوقت، احفظ الساعة لمنعها
+                    if (selectedStaff.id !== null && b.staff_id === selectedStaff.id) {
+                        staffBookedHours.push(t);
+                    }
+                });
+            }
 
             timeContainer.innerHTML = '';
             const workingHours = ['13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'];
@@ -428,7 +459,11 @@
             workingHours.forEach(time => {
                 const div = document.createElement('div');
                 div.className = 'card-option';
-                let isBlocked = blockedTimes.includes(time) || (bookingCounts[time] || 0) >= maxBookingsPerHour;
+                
+                // إغلاق الساعة إذا كانت معطلة أو استوعب الفرع طاقته القصوى أو كان الخبير المحدد مشغولاً
+                let isBlocked = blockedTimes.includes(time) || 
+                                staffBookedHours.includes(time) || 
+                                (branchBookingCounts[time] || 0) >= maxBookingsPerHour;
 
                 if (isBlocked) {
                     div.classList.add('disabled');
@@ -459,9 +494,8 @@
                     alert('الرجاء اختيار الفرع.'); return;
                 }
                 if (!document.getElementById('booking_date').value || !selectedStaff) {
-                    alert('الرجاء اختيار التاريخ وتحديد الخبير.'); return;
+                    alert('الرجاء اختيار التاريخ.'); return;
                 }
-                loadAvailableTimes(); 
             } else if (currentStep === 4) {
                 if (!selectedTime) {
                     alert('الرجاء تحديد وقت الحجز.'); return;
@@ -533,22 +567,22 @@
             const date = document.getElementById('booking_date').value;
 
             try {
-                // إدراج رأس الحجز
+                // إدراج الحجز (selectedStaff.id سيقوم بإدراج NULL بأمان إذا كان غير محدد)
                 const { data: bookingData, error: bookingError } = await supabase.from('bookings').insert([{
                     customer_name: name, 
                     phone: formattedPhone, 
                     booking_date: date, 
                     booking_time: selectedTime,
                     total_price: totalPrice, 
-                    staff_id: selectedStaff.id,
-                    branch_id: selectedBranch.id
+                    staff_id: selectedStaff.id, 
+                    branch_id: selectedBranch.id,
+                    status: 'pending' 
                 }]).select();
                 
                 if (bookingError) throw bookingError;
                 
                 const bookingId = bookingData[0].id; 
 
-                // إدراج تفاصيل الحجز
                 const subReservations = selectedServices.map(srv => ({
                     reservation_id: bookingId,
                     service_id: srv.id,
@@ -590,7 +624,7 @@
                     "text": msg
                 };
 
-                const response = await fetch(fullEndpoint, {
+                await fetch(fullEndpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'apikey': evoSettings.key },
                     body: JSON.stringify(payload)
