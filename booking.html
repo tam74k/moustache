@@ -77,6 +77,10 @@
         .btn-nav:disabled { opacity: 0.5; cursor: not-allowed; }
 
         #success-msg { display: none; text-align: center; background: #E8F5E9; color: #2E7D32; padding: 30px; border-radius: 15px; font-weight: bold; margin-top: 20px; }
+        
+        /* تنسيق شاشة الحجز المسبق */
+        #existing-booking-msg { display: none; max-width: 700px; margin: 0 auto; padding: 0 20px; }
+        .alert-box { text-align: center; background: #FFF3CD; color: #856404; padding: 25px; border-radius: 15px; margin-bottom: 25px; border: 1px solid #FFEEBA; }
     </style>
 </head>
 <body>
@@ -89,8 +93,38 @@
         <a href="index.html" class="back-btn">رجوع للرئيسية ↩</a>
     </header>
 
+    <!-- شاشة الرفض لوجود حجز مسبق -->
+    <div id="existing-booking-msg" class="fade-in">
+        <div class="alert-box">
+            <h2 style="margin-bottom: 10px;">⚠️ لديك حجز نشط بالفعل!</h2>
+            <p style="font-weight: 600;">عذراً، يوجد حجز مسجل لنفس الرقم (قيد الانتظار أو مؤكد).<br>لا يمكن إجراء حجز آخر لنفس التاريخ أو حجز جديد حتى انتهاء الحجز الحالي.</p>
+        </div>
+        
+        <div class="booking-container">
+            <h3 class="step-title">بيانات حجزك الحالي</h3>
+            <div class="review-box">
+                <div class="review-item"><span class="review-label">حالة الحجز:</span><span class="review-value" id="ex-status" style="color:var(--primary-gold);"></span></div>
+                <div class="review-item"><span class="review-label">الاسم:</span><span class="review-value" id="ex-name"></span></div>
+                <div class="review-item"><span class="review-label">رقم الجوال:</span><span class="review-value" id="ex-phone" dir="ltr"></span></div>
+                <div class="review-item"><span class="review-label">الفرع:</span><span class="review-value" id="ex-branch"></span></div>
+                <div class="review-item"><span class="review-label">التاريخ:</span><span class="review-value" id="ex-date"></span></div>
+                <div class="review-item"><span class="review-label">الوقت:</span><span class="review-value" id="ex-time"></span></div>
+                <div class="review-item"><span class="review-label">الخبير:</span><span class="review-value" id="ex-staff"></span></div>
+                <div class="review-item" style="flex-direction: column; gap: 10px;">
+                    <span class="review-label">الخدمات المطلوبة:</span>
+                    <div class="review-value" id="ex-services" style="font-size: 0.9rem; font-weight: normal;"></div>
+                </div>
+                <div class="review-item" style="border:none; margin-top:10px; font-size:1.3rem;">
+                    <span class="review-label">الإجمالي النهائي:</span>
+                    <span class="review-value" style="color:var(--primary-gold);"><span id="ex-total">0</span> <span class="currency-symbol">ج.م</span></span>
+                </div>
+            </div>
+            <button class="btn-nav btn-prev" style="width:100%; margin-top:20px; display:block;" onclick="location.reload()">رجوع وتعديل الرقم</button>
+        </div>
+    </div>
+
+    <!-- حاوية الحجز الأساسية -->
     <div class="booking-container" id="main-container">
-        <!-- Progress Bar -->
         <div class="progress-container">
             <div class="step-circle active" id="indicator-1">1<div class="step-label">الفرع والبيانات</div></div>
             <div class="step-circle" id="indicator-2">2<div class="step-label">الخدمات</div></div>
@@ -101,7 +135,6 @@
 
         <form id="wizard-form">
             
-            <!-- Step 1: Branch & Basic Info -->
             <div class="step-content active" id="step-1">
                 <h3 class="step-title">تحديد الفرع والبيانات الأساسية</h3>
                 
@@ -116,7 +149,6 @@
                 <input type="tel" id="customer_phone" required placeholder="مثال: 010...">
             </div>
 
-            <!-- Step 2: Services -->
             <div class="step-content" id="step-2">
                 <h3 class="step-title">اختيار الخدمات</h3>
                 <div class="categories-tabs" id="categories-container"></div>
@@ -134,7 +166,6 @@
                 </div>
             </div>
 
-            <!-- Step 3: Date & Staff -->
             <div class="step-content" id="step-3">
                 <h3 class="step-title">تحديد التاريخ واختيار الخبير</h3>
                 
@@ -147,13 +178,11 @@
                 </div>
             </div>
 
-            <!-- Step 4: Time -->
             <div class="step-content" id="step-4">
                 <h3 class="step-title">اختيار وقت الحجز</h3>
                 <div class="grid-options" id="time-container"></div>
             </div>
 
-            <!-- Step 5: Review & Confirm -->
             <div class="step-content" id="step-5">
                 <h3 class="step-title">مراجعة بيانات الحجز</h3>
                 <div class="review-box">
@@ -194,10 +223,10 @@
         var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentStep = 1;
-        let allServices = []; // ستحتوي جميع الخدمات ونفلترها حسب الفرع
+        let allServices = []; 
         let branchCategories = []; 
         let selectedServices = []; 
-        let selectedBranch = null; // { id, name, open_time, close_time }
+        let selectedBranch = null; 
         let selectedStaff = null; 
         let selectedTime = null;
         let totalPrice = 0;
@@ -211,9 +240,8 @@
 
         function setupDateInput() {
             const dateInput = document.getElementById('booking_date');
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            dateInput.min = tomorrow.toISOString().split('T')[0];
+            const today = new Date();
+            dateInput.min = today.toISOString().split('T')[0];
         }
 
         function formatEgyptianPhone(phoneStr) {
@@ -228,7 +256,6 @@
 
         async function fetchInitialData() {
             try {
-                // الإعدادات العامة
                 const { data: settings } = await supabase.from('salon_settings').select('*').limit(1).single();
                 if (settings) {
                     document.getElementById('dynamic-salon-name').innerText = settings.salon_name || '';
@@ -249,11 +276,9 @@
                     };
                 }
 
-                // جلب كافة الخدمات لحفظها في المتصفح والفلترة لاحقاً
                 const { data: services } = await supabase.from('services').select('*').order('category', { ascending: true });
                 if(services) allServices = services;
 
-                // جلب الفروع وعرضها في الخطوة الأولى
                 const { data: branches } = await supabase.from('branches').select('*');
                 const branchesContainer = document.getElementById('branches-container');
                 branchesContainer.innerHTML = '';
@@ -267,7 +292,6 @@
                             document.querySelectorAll('#branches-container .card-option').forEach(el => el.classList.remove('selected'));
                             div.classList.add('selected');
                             
-                            // حفظ بيانات الفرع كاملة متضمنة مواعيد العمل
                             selectedBranch = { 
                                 id: br.id, 
                                 name: br.name, 
@@ -275,14 +299,12 @@
                                 close_time: br.close_time || '23:00:00' 
                             };
                             
-                            // تصفير الاختيارات السابقة عند تغيير الفرع
                             selectedServices = [];
                             totalPrice = 0;
                             updateCartTable();
                             document.getElementById('booking_date').value = '';
                             selectedStaff = null;
                             
-                            // تحديث تصنيفات الخدمات بناءً على الفرع المختار
                             renderCategoriesForBranch();
                         };
                         branchesContainer.appendChild(div);
@@ -298,7 +320,6 @@
             const container = document.getElementById('categories-container');
             container.innerHTML = '';
             
-            // تصفية الخدمات لتشمل خدمات هذا الفرع فقط
             const branchServices = allServices.filter(s => s.branch_id === selectedBranch.id);
             branchCategories = [...new Set(branchServices.map(s => s.category || 'عام'))];
             
@@ -327,7 +348,6 @@
             const grid = document.getElementById('services-grid');
             grid.innerHTML = '';
             
-            // جلب خدمات الفرع المختار والتي تتبع التصنيف المحدد
             const filtered = allServices.filter(s => s.branch_id === selectedBranch.id && (s.category || 'عام') === category);
             
             filtered.forEach(srv => {
@@ -402,7 +422,6 @@
                 
                 staffContainer.innerHTML = '';
 
-                // 1. خيار غير محدد ليكون افتراضياً ويسهل الأمر على العميل
                 const defaultDiv = document.createElement('div');
                 defaultDiv.className = 'card-option selected'; 
                 defaultDiv.innerHTML = `<img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" class="staff-img"><span>غير محدد</span>`;
@@ -414,10 +433,8 @@
                 };
                 staffContainer.appendChild(defaultDiv);
                 
-                // تعيين الخيار الافتراضي
                 selectedStaff = { id: null, name: 'غير محدد (يحدد من قبل الإدارة)' };
 
-                // 2. إدراج الخبراء الحاضرين
                 if (staff && staff.length > 0) {
                     staff.forEach(st => {
                         if (!leaveIds.includes(st.id)) {
@@ -435,7 +452,6 @@
                     });
                 }
                 
-                // تفعيل استدعاء الأوقات مباشرة لأن "غير محدد" تم اختياره
                 loadAvailableTimes();
 
             } catch (error) {
@@ -443,7 +459,6 @@
             }
         });
 
-        // نظام الأوقات الديناميكي بناءً على الفرع وسعة الموظف
         async function loadAvailableTimes() {
             const date = document.getElementById('booking_date').value;
             const timeContainer = document.getElementById('time-container');
@@ -466,7 +481,6 @@
             if(bookings) {
                 bookings.forEach(b => { 
                     const t = b.booking_time.substring(0,5); 
-                    // فحص إذا كان الخبير المختار مشغولاً في هذا الوقت (يسمح بحجز واحد فقط للخبير في الساعة)
                     if (selectedStaff.id !== null && b.staff_id === selectedStaff.id) {
                         staffBookedHours.push(t);
                     }
@@ -475,12 +489,10 @@
 
             timeContainer.innerHTML = '';
             
-            // توليد الساعات بناءً على مواعيد الفرع المحددة في قاعدة البيانات
             let openHour = parseInt(selectedBranch.open_time.split(':')[0]);
             let closeHour = parseInt(selectedBranch.close_time.split(':')[0]);
             const workingHours = [];
             
-            // استخدام < وليس <= لضمان استبعاد آخر ساعة (مثلاً يغلق 23 فتكون آخر ساعة 22)
             for(let h = openHour; h < closeHour; h++) {
                 workingHours.push(h.toString().padStart(2, '0') + ':00');
             }
@@ -489,7 +501,6 @@
                 const div = document.createElement('div');
                 div.className = 'card-option';
                 
-                // يتم إغلاق الساعة فقط إذا أغلقتها الإدارة، أو كان هذا الخبير بعينه مشغولاً فيها
                 let isBlocked = blockedTimes.includes(time) || staffBookedHours.includes(time);
 
                 if (isBlocked) {
@@ -507,7 +518,33 @@
             });
         }
 
-        function nextStep() {
+        // دالة عرض الحجز المسبق وإيقاف الحجز
+        function showExistingBooking(eb, subRes) {
+            document.getElementById('main-container').style.display = 'none';
+            document.getElementById('existing-booking-msg').style.display = 'block';
+            document.getElementById('existing-booking-msg').classList.add('visible');
+
+            let statusAr = eb.status === 'confirmed' ? 'مؤكد' : 'قيد الانتظار';
+
+            document.getElementById('ex-status').innerText = statusAr;
+            document.getElementById('ex-name').innerText = eb.customer_name;
+            document.getElementById('ex-phone').innerText = `+${eb.phone}`;
+            document.getElementById('ex-branch').innerText = eb.branches ? eb.branches.name : 'غير محدد';
+            document.getElementById('ex-date').innerText = eb.booking_date;
+            document.getElementById('ex-time').innerText = eb.booking_time ? eb.booking_time.substring(0,5) : '';
+            document.getElementById('ex-staff').innerText = eb.staff ? eb.staff.name : 'غير محدد (من قبل الإدارة)';
+            document.getElementById('ex-total').innerText = eb.total_price;
+
+            let srvList = '';
+            if(subRes && subRes.length > 0) {
+                srvList = subRes.map(s => `- ${s.service_name} (${s.price})`).join('<br>');
+            } else {
+                srvList = 'غير متوفر';
+            }
+            document.getElementById('ex-services').innerHTML = srvList;
+        }
+
+        async function nextStep() {
             if (currentStep === 1) {
                 if (!selectedBranch) {
                     alert('الرجاء اختيار الفرع الأقرب لك.'); return;
@@ -515,6 +552,44 @@
                 if (!document.getElementById('customer_name').value || !document.getElementById('customer_phone').value) {
                     alert('الرجاء إدخال الاسم ورقم الجوال.'); return;
                 }
+
+                const btn = document.getElementById('btn-next');
+                const originalText = btn.innerText;
+                btn.innerText = 'جاري التحقق... ⏳';
+                btn.disabled = true;
+
+                try {
+                    let rawPhone = document.getElementById('customer_phone').value;
+                    let formattedPhone = formatEgyptianPhone(rawPhone);
+                    const today = new Date().toISOString().split('T')[0];
+
+                    // فحص قاعدة البيانات للتأكد من عدم وجود حجز نشط (غير منتهي أو ملغي)
+                    const { data: existingBookings, error: fetchError } = await supabase
+                        .from('bookings')
+                        .select('id, customer_name, phone, booking_date, booking_time, total_price, status, branches(name), staff(name)')
+                        .eq('phone', formattedPhone)
+                        .in('status', ['pending', 'confirmed'])
+                        .gte('booking_date', today) // فحص حجوزات اليوم فصاعداً
+                        .limit(1);
+
+                    if (existingBookings && existingBookings.length > 0) {
+                        const eb = existingBookings[0];
+                        // جلب الخدمات المربوطة بهذا الحجز لعرضها
+                        const { data: subRes } = await supabase
+                            .from('sub_reservation')
+                            .select('service_name, price')
+                            .eq('reservation_id', eb.id);
+
+                        showExistingBooking(eb, subRes);
+                        return; // التوقف وعدم استكمال الحجز
+                    }
+                } catch (err) {
+                    console.error("Check Error:", err);
+                } finally {
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                }
+
             } else if (currentStep === 2) {
                 if (selectedServices.length === 0) {
                     alert('الرجاء اختيار خدمة واحدة على الأقل من القوائم.'); return;
@@ -594,7 +669,7 @@
             const date = document.getElementById('booking_date').value;
 
             try {
-                // إدراج رأس الحجز، `selectedStaff.id` سيقوم بتسجيل null في الداتابيز إذا تم اختيار "غير محدد"
+                // إدراج الحجز
                 const { data: bookingData, error: bookingError } = await supabase.from('bookings').insert([{
                     customer_name: name, 
                     phone: formattedPhone, 
@@ -610,7 +685,6 @@
                 
                 const bookingId = bookingData[0].id; 
 
-                // إدراج تفاصيل الحجز
                 const subReservations = selectedServices.map(srv => ({
                     reservation_id: bookingId,
                     service_id: srv.id,
