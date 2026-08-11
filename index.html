@@ -3,17 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صالون وحلاقة رجالي</title>
-      <!-- استدعاء خط Cairo الأساسي -->
+    <title>صالون موستاش للرجال</title>
+    <!-- استدعاء خط Cairo الأساسي -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
     <!-- استدعاء خط Berkshire Swash لاسم الصالون -->
     <link href="https://fonts.googleapis.com/css2?family=Berkshire+Swash&display=swap" rel="stylesheet">
+    
+    <!-- أيقونة المتصفح الديناميكية -->
+    <link id="dynamic-favicon" rel="icon" href="">
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
         :root {
             --primary-gold: #D4AF37;
-            --soft-pink: #F5F5F5; /* تم تغيير الوردي إلى لون محايد يناسب الرجال (رمادي فاتح جداً) */
+            --soft-pink: #F5F5F5;
             --dark-black: #1A1A1A;
             --pure-white: #FFFFFF;
             --text-gray: #4A4A4A;
@@ -27,7 +31,6 @@
         .slide-up { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
         .slide-up.visible { opacity: 1; transform: translateY(0); }
 
-        /* تخصيص خط اسم الصالون باللغة الإنجليزية */
         #dynamic-header-name,
         #dynamic-hero-name,
         #dynamic-footer-name {
@@ -37,17 +40,9 @@
 
         header { position: absolute; top: 0; left: 0; right: 0; padding: 25px 20px; display: flex; justify-content: center; align-items: center; z-index: 10; width: 100%; }
         .logo-container { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 10px; 
-            text-decoration: none; 
-            background: rgba(255, 255, 255, 0.15); 
-            padding: 15px 40px; 
-            border-radius: 20px; 
-            backdrop-filter: blur(8px); 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; 
+            text-decoration: none; background: rgba(255, 255, 255, 0.15); padding: 15px 40px; 
+            border-radius: 20px; backdrop-filter: blur(8px); box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         .logo-container img { height: 140px; width: auto; max-width: 100%; object-fit: contain; }
         .logo-container h2 { font-size: 1.8rem; margin: 0; color: var(--primary-gold); font-weight: 700; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
@@ -60,7 +55,6 @@
         section h2 { color: var(--primary-gold); margin-bottom: 20px; font-size: 2rem; }
         section p { color: var(--text-gray); line-height: 1.8; margin-bottom: 30px; max-width: 800px; margin-inline: auto;}
 
-        /* تصميم قسم الفروع الجديد */
         .branches-section { background-color: var(--pure-white); }
         .branches-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; max-width: 1000px; margin: 0 auto; margin-top: 40px; }
         .branch-card { background: var(--soft-pink); border: 2px solid transparent; padding: 30px 20px; border-radius: 15px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
@@ -68,7 +62,6 @@
         .branch-card h3 { color: var(--dark-black); margin-bottom: 15px; font-size: 1.3rem; }
         .branch-card span { display: inline-block; padding: 8px 20px; background: var(--dark-black); color: var(--primary-gold); border-radius: 20px; font-size: 0.9rem; font-weight: 600; }
 
-        /* تصميم نافذة الفرع (Modal) */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(5px); opacity: 0; transition: opacity 0.3s ease; }
         .modal.active { display: flex; opacity: 1; }
         .modal-content { background: var(--pure-white); width: 100%; max-width: 600px; border-radius: 20px; padding: 30px; position: relative; text-align: right; transform: translateY(20px); transition: transform 0.3s ease; }
@@ -84,7 +77,6 @@
         .footer-content { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 20px; }
         .footer-logo { height: 100px; object-fit: contain; }
         
-        /* تصميم فروع الفوتر */
         .footer-branches-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; width: 100%; margin-top: 30px; text-align: right; border-top: 1px solid #333; padding-top: 40px; }
         .footer-branch-item { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; border-right: 3px solid var(--primary-gold); }
         .footer-branch-item h4 { color: var(--primary-gold); margin-bottom: 10px; font-size: 1.1rem; }
@@ -123,7 +115,6 @@
 
     <div class="hero fade-in">
         <h1 id="dynamic-hero-name">...</h1>
-        <!-- تم تعديل النصوص لتناسب الرجال -->
         <p>تألق بمظهر يعكس فخامتك، في مكانك الأنيق.</p>
     </div>
 
@@ -137,7 +128,6 @@
         <p>من العناية بالشعر واللحية إلى تجهيز العرسان الاحترافي، دع فريقنا من الخبراء يهتم بأدق تفاصيل أناقتك في أجواء من الخصوصية والفخامة.</p>
     </section>
 
-    <!-- قسم الفروع الجديد -->
     <section class="branches-section slide-up">
         <h2>فروعنا</h2>
         <p>اختر الفرع الأقرب إليك واستمتع بتجربة حلاقة استثنائية.</p>
@@ -146,7 +136,7 @@
         </div>
     </section>
 
-    <!-- نافذة تفاصيل الفرع (Modal) -->
+    <!-- نافذة تفاصيل الفرع -->
     <div id="branch-modal" class="modal">
         <div class="modal-content">
             <span class="close-modal" id="close-modal-btn">&times;</span>
@@ -172,9 +162,8 @@
             <h3 id="dynamic-footer-name" style="color: var(--primary-gold); font-size: 1.5rem;">...</h3>
             <p>نصنع الأناقة بحب وإتقان لنبرز أفضل ما فيك.</p>
             
-            <!-- شبكة الفروع في الفوتر -->
             <div class="footer-branches-grid" id="footer-branches-container">
-                <!-- سيتم حقن الفروع هنا -->
+                <!-- الفروع هنا -->
             </div>
 
             <div class="social-links">
@@ -207,7 +196,6 @@
 
         async function loadSalonSettings() {
             try {
-                // جلب الإعدادات الأساسية
                 const { data: settings, error } = await supabase.from('salon_settings').select('*').limit(1).single();
 
                 if (settings && !error) {
@@ -219,8 +207,15 @@
                     document.getElementById('dynamic-copyright-name').innerText = salonName;
                     
                     if (settings.logo_url && settings.logo_url.trim() !== '') {
-                        document.getElementById('dynamic-logo').src = settings.logo_url;
-                        document.getElementById('dynamic-footer-logo').src = settings.logo_url;
+                        const headerLogo = document.getElementById('dynamic-logo');
+                        if (headerLogo) headerLogo.src = settings.logo_url;
+                        
+                        const footerLogo = document.getElementById('dynamic-footer-logo');
+                        if (footerLogo) footerLogo.src = settings.logo_url;
+
+                        // تحديث أيقونة المتصفح Favicon
+                        const favicon = document.getElementById('dynamic-favicon');
+                        if (favicon) favicon.href = settings.logo_url;
                     }
 
                     if (settings.contact_phone) {
@@ -242,14 +237,12 @@
                     footerBranchesContainer.innerHTML = '';
 
                     branches.forEach(branch => {
-                        // 1. إضافة كروت الفروع في الصفحة
                         const card = document.createElement('div');
                         card.className = 'branch-card';
                         card.innerHTML = `<h3>${branch.name}</h3><span>عرض التفاصيل والاتجاهات</span>`;
                         card.onclick = () => openBranchModal(branch);
                         branchesContainer.appendChild(card);
 
-                        // 2. إضافة الفروع في الفوتر
                         const fItem = document.createElement('div');
                         fItem.className = 'footer-branch-item';
                         fItem.innerHTML = `
@@ -266,7 +259,6 @@
             }
         }
 
-        // منطق التحكم في النافذة المنبثقة (Modal)
         const modal = document.getElementById('branch-modal');
         const closeModalBtn = document.getElementById('close-modal-btn');
 
@@ -292,10 +284,9 @@
 
         closeModalBtn.onclick = () => {
             modal.classList.remove('active');
-            document.getElementById('modal-branch-map').src = ''; // إيقاف تحميل الخريطة عند الإغلاق
+            document.getElementById('modal-branch-map').src = ''; 
         }
 
-        // إغلاق النافذة عند الضغط خارجها
         window.onclick = (e) => {
             if (e.target === modal) {
                 modal.classList.remove('active');
