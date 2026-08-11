@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صالون موستاش للرجال</title>
+    <title>صالون وحلاقة رجالي</title>
     <!-- استدعاء خط Cairo الأساسي -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
     <!-- استدعاء خط Berkshire Swash لاسم الصالون -->
@@ -47,6 +47,7 @@
         .logo-container img { height: 140px; width: auto; max-width: 100%; object-fit: contain; }
         .logo-container h2 { font-size: 1.8rem; margin: 0; color: var(--primary-gold); font-weight: 700; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
 
+        /* سيتم تحديث صورة الخلفية برمجياً عبر الجافاسكريبت، تم وضع صورة افتراضية هنا للتحميل المبدئي */
         .hero { height: 100vh; background: linear-gradient(rgba(26, 26, 26, 0.8), rgba(26, 26, 26, 0.8)), url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=1920&q=80') center/cover; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--pure-white); padding: 20px; }
         .hero h1 { font-size: 3rem; color: var(--primary-gold); margin-bottom: 15px; font-weight: 700; margin-top: 100px; }
         .hero p { font-size: 1.2rem; margin-bottom: 30px; font-weight: 300; max-width: 600px; }
@@ -136,7 +137,7 @@
         </div>
     </section>
 
-    <!-- نافذة تفاصيل الفرع -->
+    <!-- نافذة تفاصيل الفرع (Modal) -->
     <div id="branch-modal" class="modal">
         <div class="modal-content">
             <span class="close-modal" id="close-modal-btn">&times;</span>
@@ -162,8 +163,9 @@
             <h3 id="dynamic-footer-name" style="color: var(--primary-gold); font-size: 1.5rem;">...</h3>
             <p>نصنع الأناقة بحب وإتقان لنبرز أفضل ما فيك.</p>
             
+            <!-- شبكة الفروع في الفوتر -->
             <div class="footer-branches-grid" id="footer-branches-container">
-                <!-- الفروع هنا -->
+                <!-- سيتم حقن الفروع هنا -->
             </div>
 
             <div class="social-links">
@@ -196,6 +198,7 @@
 
         async function loadSalonSettings() {
             try {
+                // جلب الإعدادات الأساسية
                 const { data: settings, error } = await supabase.from('salon_settings').select('*').limit(1).single();
 
                 if (settings && !error) {
@@ -207,15 +210,16 @@
                     document.getElementById('dynamic-copyright-name').innerText = salonName;
                     
                     if (settings.logo_url && settings.logo_url.trim() !== '') {
-                        const headerLogo = document.getElementById('dynamic-logo');
-                        if (headerLogo) headerLogo.src = settings.logo_url;
+                        document.getElementById('dynamic-logo').src = settings.logo_url;
+                        document.getElementById('dynamic-footer-logo').src = settings.logo_url;
                         
-                        const footerLogo = document.getElementById('dynamic-footer-logo');
-                        if (footerLogo) footerLogo.src = settings.logo_url;
-
-                        // تحديث أيقونة المتصفح Favicon
                         const favicon = document.getElementById('dynamic-favicon');
                         if (favicon) favicon.href = settings.logo_url;
+                    }
+
+                    // --- الكود الجديد لتحديث صورة الخلفية برمجياً ---
+                    if (settings.hero_bg_url && settings.hero_bg_url.trim() !== '') {
+                        document.querySelector('.hero').style.backgroundImage = `linear-gradient(rgba(26, 26, 26, 0.8), rgba(26, 26, 26, 0.8)), url('${settings.hero_bg_url}')`;
                     }
 
                     if (settings.contact_phone) {
@@ -259,6 +263,7 @@
             }
         }
 
+        // منطق التحكم في النافذة المنبثقة (Modal)
         const modal = document.getElementById('branch-modal');
         const closeModalBtn = document.getElementById('close-modal-btn');
 
@@ -284,9 +289,10 @@
 
         closeModalBtn.onclick = () => {
             modal.classList.remove('active');
-            document.getElementById('modal-branch-map').src = ''; 
+            document.getElementById('modal-branch-map').src = ''; // إيقاف تحميل الخريطة عند الإغلاق
         }
 
+        // إغلاق النافذة عند الضغط خارجها
         window.onclick = (e) => {
             if (e.target === modal) {
                 modal.classList.remove('active');
