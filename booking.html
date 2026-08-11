@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>حجز موعد | نظام الخطوات</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Berkshire+Swash&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
         :root {
             --primary-gold: #D4AF37;
-            --soft-pink: #F8E7E9;
+            --soft-pink: #F5F5F5;
             --dark-black: #1A1A1A;
             --pure-white: #FFFFFF;
             --border-gray: #E0E0E0;
@@ -23,7 +24,7 @@
         header { background-color: var(--pure-white); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .logo-container { display: flex; align-items: center; gap: 10px; text-decoration: none; }
         .logo-container img { height: 40px; display: none; }
-        .logo-container h2 { font-size: 1.2rem; color: var(--primary-gold); font-weight: 700; }
+        .logo-container h2 { font-size: 1.2rem; color: var(--primary-gold); font-weight: 700; font-family: 'Berkshire Swash', serif; letter-spacing: 1px; }
         .back-btn { text-decoration: none; color: var(--text-gray); font-weight: 600; font-size: 0.9rem; }
 
         .booking-container { background: var(--pure-white); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); max-width: 700px; margin: 0 auto; }
@@ -92,7 +93,7 @@
         <div class="progress-container">
             <div class="step-circle active" id="indicator-1">1<div class="step-label">البيانات</div></div>
             <div class="step-circle" id="indicator-2">2<div class="step-label">الخدمات</div></div>
-            <div class="step-circle" id="indicator-3">3<div class="step-label">الفنية والتاريخ</div></div>
+            <div class="step-circle" id="indicator-3">3<div class="step-label">الفرع والفنية</div></div>
             <div class="step-circle" id="indicator-4">4<div class="step-label">الوقت</div></div>
             <div class="step-circle" id="indicator-5">5<div class="step-label">المراجعة</div></div>
         </div>
@@ -103,7 +104,7 @@
             <div class="step-content active" id="step-1">
                 <h3 class="step-title">البيانات الأساسية</h3>
                 <label>الاسم الكريم</label>
-                <input type="text" id="customer_name" required placeholder="أدخلي اسمك">
+                <input type="text" id="customer_name" required placeholder="أدخل اسمك">
                 <label>رقم الجوال</label>
                 <input type="tel" id="customer_phone" required placeholder="مثال: 010...">
             </div>
@@ -113,7 +114,6 @@
                 <h3 class="step-title">اختيار الخدمات</h3>
                 
                 <div class="categories-tabs" id="categories-container"></div>
-
                 <div class="grid-options" id="services-grid"></div>
 
                 <div class="cart-section">
@@ -128,13 +128,19 @@
                 </div>
             </div>
 
-            <!-- Step 3: Date & Staff -->
+            <!-- Step 3: Branch, Date & Staff -->
             <div class="step-content" id="step-3">
-                <h3 class="step-title">تحديد التاريخ واختيار الفنية</h3>
-                <label>تاريخ الحجز (اختاري التاريخ أولاً لظهور الخبيرات المتاحات)</label>
+                <h3 class="step-title">تحديد الفرع والتاريخ واختيار الفنية</h3>
+                
+                <h4 style="margin: 0 0 10px;">الفرع:</h4>
+                <div class="grid-options" id="branches-container" style="margin-bottom: 25px;">
+                    <div style="grid-column: 1/-1; color: gray; text-align: center;">جاري تحميل الفروع...</div>
+                </div>
+
+                <label>تاريخ الحجز (اختر التاريخ لظهور الخبيرات المتاحين)</label>
                 <input type="date" id="booking_date" required>
                 
-                <h4 style="margin: 15px 0 10px;">الخبيرات المتاحات:</h4>
+                <h4 style="margin: 15px 0 10px;">الخبراء المتاحون:</h4>
                 <div class="grid-options" id="staff-container">
                     <div style="grid-column: 1/-1; color: gray; text-align: center;">يرجى اختيار التاريخ أولاً</div>
                 </div>
@@ -152,9 +158,10 @@
                 <div class="review-box">
                     <div class="review-item"><span class="review-label">الاسم:</span><span class="review-value" id="rev-name"></span></div>
                     <div class="review-item"><span class="review-label">رقم الجوال:</span><span class="review-value" id="rev-phone" dir="ltr"></span></div>
+                    <div class="review-item"><span class="review-label">الفرع:</span><span class="review-value" id="rev-branch"></span></div>
                     <div class="review-item"><span class="review-label">التاريخ:</span><span class="review-value" id="rev-date"></span></div>
                     <div class="review-item"><span class="review-label">الوقت:</span><span class="review-value" id="rev-time"></span></div>
-                    <div class="review-item"><span class="review-label">الخبيرة:</span><span class="review-value" id="rev-staff"></span></div>
+                    <div class="review-item"><span class="review-label">الخبير:</span><span class="review-value" id="rev-staff"></span></div>
                     <div class="review-item" style="flex-direction: column; gap: 10px;">
                         <span class="review-label">الخدمات المختارة:</span>
                         <div class="review-value" id="rev-services" style="font-size: 0.9rem; font-weight: normal;"></div>
@@ -191,6 +198,7 @@
         let allServices = [];
         let categories = [];
         let selectedServices = []; 
+        let selectedBranch = null;
         let selectedStaff = null; 
         let selectedTime = null;
         let totalPrice = 0;
@@ -210,7 +218,6 @@
             dateInput.min = tomorrow.toISOString().split('T')[0];
         }
 
-        // دالة تنظيف رقم الجوال وتجهيزه لمصر (إضافة كود 20)
         function formatEgyptianPhone(phoneStr) {
             let cleanPhone = phoneStr.replace(/\D/g, ''); 
             if (cleanPhone.startsWith('0')) {
@@ -234,7 +241,6 @@
                     salonCurrency = settings.currency || 'ج.م';
                     document.querySelectorAll('.currency-symbol').forEach(el => el.innerText = salonCurrency);
                     
-                    // جلب بيانات Evolution API
                     evoSettings = {
                         url: settings.evo_api_url, 
                         instance: settings.evo_instance_name,
@@ -243,12 +249,39 @@
                     };
                 }
 
+                // جلب الخدمات
                 const { data: services } = await supabase.from('services').select('*').order('category', { ascending: true });
                 if(services) {
                     allServices = services;
                     categories = [...new Set(services.map(s => s.category || 'عام'))];
                     renderCategories();
                 }
+
+                // جلب الفروع
+                const { data: branches } = await supabase.from('branches').select('*');
+                const branchesContainer = document.getElementById('branches-container');
+                branchesContainer.innerHTML = '';
+                if(branches && branches.length > 0) {
+                    branches.forEach(br => {
+                        const div = document.createElement('div');
+                        div.className = 'card-option';
+                        div.innerHTML = `<strong>${br.name}</strong>`;
+                        div.onclick = () => {
+                            document.querySelectorAll('#branches-container .card-option').forEach(el => el.classList.remove('selected'));
+                            div.classList.add('selected');
+                            selectedBranch = { id: br.id, name: br.name };
+                            
+                            // إعادة تقييم الأوقات المتاحة إذا تم تغيير الفرع بعد اختيار التاريخ
+                            if(document.getElementById('booking_date').value && selectedStaff) {
+                                loadAvailableTimes();
+                            }
+                        };
+                        branchesContainer.appendChild(div);
+                    });
+                } else {
+                    branchesContainer.innerHTML = '<div style="grid-column: 1/-1; color:red;">لا توجد فروع متاحة حالياً.</div>';
+                }
+
             } catch (error) { console.error("Error:", error); }
         }
 
@@ -355,24 +388,34 @@
                             document.querySelectorAll('#staff-container .card-option').forEach(el => el.classList.remove('selected'));
                             div.classList.add('selected');
                             selectedStaff = { id: st.id, name: st.name };
+                            
+                            // تحديث الأوقات في حال تم تغيير الفني
+                            if(selectedBranch) loadAvailableTimes();
                         };
                         staffContainer.appendChild(div);
                     }
                 });
             }
-            if (count === 0) staffContainer.innerHTML = '<div style="grid-column: 1/-1; color:red;">نعتذر، لا توجد خبيرات متاحات في هذا التاريخ.</div>';
+            if (count === 0) staffContainer.innerHTML = '<div style="grid-column: 1/-1; color:red;">نعتذر، لا يوجد خبراء متاحون في هذا التاريخ.</div>';
         });
 
         async function loadAvailableTimes() {
             const date = document.getElementById('booking_date').value;
             const timeContainer = document.getElementById('time-container');
+            
+            if(!selectedBranch || !date || !selectedStaff) return;
+
             timeContainer.innerHTML = '<div>جاري تجهيز الأوقات...</div>';
             selectedTime = null;
 
             const { data: blocked } = await supabase.from('blocked_hours').select('blocked_time').eq('blocked_date', date);
             const blockedTimes = blocked ? blocked.map(b => b.blocked_time.substring(0,5)) : [];
             
-            const { data: bookings } = await supabase.from('bookings').select('booking_time').eq('booking_date', date);
+            // فحص السعة الاستيعابية بناءً على الفرع المحدد في هذا التاريخ
+            const { data: bookings } = await supabase.from('bookings').select('booking_time')
+                .eq('booking_date', date)
+                .eq('branch_id', selectedBranch.id);
+                
             const bookingCounts = {};
             if(bookings) bookings.forEach(b => { const t = b.booking_time.substring(0,5); bookingCounts[t] = (bookingCounts[t] || 0) + 1; });
 
@@ -382,6 +425,7 @@
             workingHours.forEach(time => {
                 const div = document.createElement('div');
                 div.className = 'card-option';
+                // إيقاف الوقت إذا تجاوز الفرع الحد الأقصى أو كان مغلقاً
                 let isBlocked = blockedTimes.includes(time) || (bookingCounts[time] || 0) >= maxBookingsPerHour;
 
                 if (isBlocked) {
@@ -409,10 +453,13 @@
                     alert('الرجاء اختيار خدمة واحدة على الأقل من القوائم.'); return;
                 }
             } else if (currentStep === 3) {
-                if (!document.getElementById('booking_date').value || !selectedStaff) {
-                    alert('الرجاء اختيار التاريخ وتحديد الخبيرة.'); return;
+                if (!selectedBranch) {
+                    alert('الرجاء اختيار الفرع.'); return;
                 }
-                loadAvailableTimes();
+                if (!document.getElementById('booking_date').value || !selectedStaff) {
+                    alert('الرجاء اختيار التاريخ وتحديد الخبير.'); return;
+                }
+                loadAvailableTimes(); // تجهيز الأوقات للخطوة القادمة
             } else if (currentStep === 4) {
                 if (!selectedTime) {
                     alert('الرجاء تحديد وقت الحجز.'); return;
@@ -463,6 +510,7 @@
 
             document.getElementById('rev-name').innerText = document.getElementById('customer_name').value;
             document.getElementById('rev-phone').innerText = `+${formattedDisplayPhone}`;
+            document.getElementById('rev-branch').innerText = selectedBranch.name;
             document.getElementById('rev-date').innerText = document.getElementById('booking_date').value;
             document.getElementById('rev-time').innerText = selectedTime.substring(0,5);
             document.getElementById('rev-staff').innerText = selectedStaff.name;
@@ -479,37 +527,52 @@
 
             const name = document.getElementById('customer_name').value;
             const rawPhone = document.getElementById('customer_phone').value;
-            const formattedPhone = formatEgyptianPhone(rawPhone); // الرقم المُجهز للـ API وقاعدة البيانات
+            const formattedPhone = formatEgyptianPhone(rawPhone);
             const date = document.getElementById('booking_date').value;
 
             try {
-                // إدراج البيانات في Supabase
-                const { error } = await supabase.from('bookings').insert([{
-                    customer_name: name, phone: formattedPhone, booking_date: date, booking_time: selectedTime,
-                    total_price: totalPrice, services_ids: selectedServices, staff_id: selectedStaff.id
-                }]);
+                // 1. إدراج رأس الحجز (Master Record) مع حفظ الـ branch_id واسترجاع كود الحجز UUID
+                const { data: bookingData, error: bookingError } = await supabase.from('bookings').insert([{
+                    customer_name: name, 
+                    phone: formattedPhone, 
+                    booking_date: date, 
+                    booking_time: selectedTime,
+                    total_price: totalPrice, 
+                    staff_id: selectedStaff.id,
+                    branch_id: selectedBranch.id
+                }]).select();
                 
-                if (error) throw error;
+                if (bookingError) throw bookingError;
+                
+                const bookingId = bookingData[0].id; // الحصول على رقم الحجز
+
+                // 2. إدراج تفاصيل الحجز (Detail Records) في جدول sub_reservation سطر بسطر
+                const subReservations = selectedServices.map(srv => ({
+                    reservation_id: bookingId,
+                    service_id: srv.id,       // كود الخدمة
+                    service_name: srv.name,   // اسم الخدمة
+                    price: srv.price          // السعر
+                }));
+
+                const { error: subError } = await supabase.from('sub_reservation').insert(subReservations);
+                if (subError) throw subError;
 
                 // إظهار رسالة النجاح
                 document.getElementById('main-container').style.display = 'none';
                 document.getElementById('success-msg').style.display = 'block';
 
-                // إرسال رسالة الواتساب باستخدام الـ API المُجهز
                 if (evoSettings.url) {
                     sendWhatsApp(name, formattedPhone, date, selectedTime, selectedServices, totalPrice);
                 }
             } catch (err) {
                 alert('حدث خطأ. حاول مرة أخرى.');
+                console.error(err);
                 btn.innerText = 'تأكيد الحجز النهائي'; btn.disabled = false; document.getElementById('btn-prev').disabled = false;
             }
         });
 
-        // دالة الإرسال المطابقة للـ curl المطلوب
-       // دالة الإرسال المطابقة للـ curl المطلوب مع كشف الأخطاء
-       async function sendWhatsApp(name, phone, date, time, services, price) {
+        async function sendWhatsApp(name, phone, date, time, services, price) {
             try {
-                // 1. استبدال المتغيرات في الرسالة
                 let msg = evoSettings.template || 'تم الحجز بنجاح.';
                 msg = msg.replace(/{name}/g, name)
                          .replace(/{services}/g, services.map(s=>s.name).join('، '))
@@ -521,31 +584,16 @@
                 let apiUrl = evoSettings.url.endsWith('/') ? evoSettings.url.slice(0, -1) : evoSettings.url;
                 let fullEndpoint = `${apiUrl}/message/sendText/${evoSettings.instance}`;
                 
-                // 2. الهيكل الصحيح المطلوب بناءً على رسالة الخطأ من سيرفرك
                 const payload = {
                     "number": phone,
                     "text": msg
                 };
 
-                console.log("جاري الإرسال إلى:", fullEndpoint);
-                console.log("البيانات المرسلة:", payload);
-
-                // 3. إرسال الطلب
                 const response = await fetch(fullEndpoint, {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json', 
-                        'apikey': evoSettings.key 
-                    },
+                    headers: { 'Content-Type': 'application/json', 'apikey': evoSettings.key },
                     body: JSON.stringify(payload)
                 });
-
-                if (!response.ok) {
-                    const responseData = await response.json();
-                    throw new Error(JSON.stringify(responseData));
-                }
-
-                console.log("تم إرسال رسالة الواتساب بنجاح!");
 
             } catch (e) {
                 console.error("خطأ في إرسال الواتساب:", e.message);
