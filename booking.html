@@ -95,7 +95,7 @@
     <div id="existing-booking-msg" class="fade-in">
         <div class="alert-box">
             <h2 style="margin-bottom: 10px;">⚠️ لديك حجز نشط في هذا اليوم!</h2>
-            <p style="font-weight: 600;">عذراً، يوجد حجز مسجل لنفس الرقم (قيد الانتظار أو مؤكد) في التاريخ المحدد.<br>لا يمكن إجراء حجز آخر في نفس اليوم، ولكن يمكنك حجز يوم آخر.</p>
+            <p style="font-weight: 600;">عذراً، يوجد حجز مسجل لنفس الرقم في التاريخ المحدد.<br>لا يمكن إجراء حجز آخر في نفس اليوم، ولكن يمكنك حجز يوم آخر.</p>
         </div>
         
         <div class="booking-container">
@@ -112,12 +112,8 @@
                     <span class="review-label">الخدمات المطلوبة:</span>
                     <div class="review-value" id="ex-services" style="font-size: 0.9rem; font-weight: normal;"></div>
                 </div>
-                <div class="review-item" style="border:none; margin-top:10px; font-size:1.3rem;">
-                    <span class="review-label">الإجمالي النهائي:</span>
-                    <span class="review-value" style="color:var(--primary-gold);"><span id="ex-total">0</span> <span class="currency-symbol">ج.م</span></span>
-                </div>
             </div>
-            <button class="btn-nav btn-prev" style="width:100%; margin-top:20px; display:block;" onclick="location.reload()">الرجوع لتعديل التاريخ</button>
+            <button class="btn-nav btn-prev" style="width:100%; display:block;" onclick="location.reload()">تعديل التاريخ</button>
         </div>
     </div>
 
@@ -134,12 +130,10 @@
             
             <div class="step-content active" id="step-1">
                 <h3 class="step-title">تحديد الفرع والبيانات الأساسية</h3>
-                
                 <h4 style="margin: 0 0 10px;">اختر الفرع الأقرب لك:</h4>
                 <div class="grid-options" id="branches-container" style="margin-bottom: 25px;">
-                    <div style="grid-column: 1/-1; color: gray; text-align: center;">جاري تحميل الفروع...</div>
+                    <div style="grid-column: 1/-1; color: gray; text-align: center;">جاري التحميل...</div>
                 </div>
-
                 <label>الاسم الكريم</label>
                 <input type="text" id="customer_name" required placeholder="أدخل اسمك">
                 <label>رقم الجوال</label>
@@ -150,14 +144,11 @@
                 <h3 class="step-title">اختيار الخدمات</h3>
                 <div class="categories-tabs" id="categories-container"></div>
                 <div class="grid-options" id="services-grid"></div>
-
                 <div class="cart-section">
                     <h4>الخدمات المطلوبة:</h4>
                     <table class="cart-table" id="cart-table">
                         <thead><tr><th>الخدمة</th><th>السعر</th><th>إلغاء</th></tr></thead>
-                        <tbody id="cart-body">
-                            <tr><td colspan="3" style="text-align: center; color: gray;">لم يتم اختيار خدمات بعد</td></tr>
-                        </tbody>
+                        <tbody id="cart-body"><tr><td colspan="3" style="text-align: center; color: gray;">لم يتم اختيار خدمات بعد</td></tr></tbody>
                     </table>
                     <div class="total-price-display">الإجمالي: <span id="cart-total">0</span> <span class="currency-symbol">ج.م</span></div>
                 </div>
@@ -165,11 +156,9 @@
 
             <div class="step-content" id="step-3">
                 <h3 class="step-title">تحديد التاريخ واختيار الخبير</h3>
-                
                 <label>تاريخ الحجز</label>
                 <input type="date" id="booking_date" required>
-                
-                <h4 style="margin: 15px 0 10px;">الخبراء المتاحون (في الفرع المختار):</h4>
+                <h4 style="margin: 15px 0 10px;">الخبراء المتاحون:</h4>
                 <div class="grid-options" id="staff-container">
                     <div style="grid-column: 1/-1; color: gray; text-align: center;">يرجى اختيار التاريخ أولاً</div>
                 </div>
@@ -201,16 +190,15 @@
             </div>
 
             <div class="nav-buttons">
-                <button type="button" class="btn-nav btn-prev" id="btn-prev" style="display: none;" onclick="prevStep()">رجوع للخلف</button>
+                <button type="button" class="btn-nav btn-prev" id="btn-prev" style="display: none;" onclick="prevStep()">رجوع</button>
                 <button type="button" class="btn-nav btn-next" id="btn-next" onclick="nextStep()">التالي</button>
-                <button type="submit" class="btn-nav btn-next" id="btn-submit" style="display: none;">تأكيد الحجز النهائي</button>
+                <button type="submit" class="btn-nav btn-next" id="btn-submit" style="display: none;">تأكيد الحجز</button>
             </div>
         </form>
     </div>
 
     <div id="success-msg">
         <h2 style="margin-bottom: 15px;">🎉 تم تسجيل حجزك بنجاح!</h2>
-        <br>
         <a href="index.html" style="color: var(--primary-gold); text-decoration: underline;">العودة للصفحة الرئيسية</a>
     </div>
 
@@ -220,17 +208,10 @@
         var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentStep = 1;
-        let allServices = []; 
-        let branchCategories = []; 
-        let selectedServices = []; 
-        let selectedBranch = null; 
-        let selectedStaff = null; 
-        let selectedTime = null;
-        let totalPrice = 0;
-        let maxBookingsPerHour = 2; // يطبق الآن على كل موظف
-        let currentAvailableStaffCount = 0; // تخزين عدد الموظفين المتاحين في اليوم المحدد
-        let salonCurrency = 'ج.م';
-        let evoSettings = {};
+        let allServices = []; let branchCategories = []; let selectedServices = []; 
+        let selectedBranch = null; let selectedStaff = null; let selectedTime = null;
+        let totalPrice = 0; let maxBookingsPerHour = 2; let currentAvailableStaffCount = 0;
+        let salonCurrency = 'ج.م'; let evoSettings = {};
 
         document.addEventListener("DOMContentLoaded", async () => {
             setupDateInput();
@@ -239,17 +220,13 @@
 
         function setupDateInput() {
             const dateInput = document.getElementById('booking_date');
-            const today = new Date();
-            dateInput.min = today.toISOString().split('T')[0];
+            dateInput.min = new Date().toISOString().split('T')[0];
         }
 
         function formatEgyptianPhone(phoneStr) {
             let cleanPhone = phoneStr.replace(/\D/g, ''); 
-            if (cleanPhone.startsWith('0')) {
-                cleanPhone = '2' + cleanPhone;
-            } else if (!cleanPhone.startsWith('20') && cleanPhone.length >= 10) {
-                cleanPhone = '20' + cleanPhone; 
-            }
+            if (cleanPhone.startsWith('0')) cleanPhone = '2' + cleanPhone;
+            else if (!cleanPhone.startsWith('20') && cleanPhone.length >= 10) cleanPhone = '20' + cleanPhone; 
             return cleanPhone;
         }
 
@@ -259,20 +236,17 @@
                 if (settings) {
                     document.getElementById('dynamic-salon-name').innerText = settings.salon_name || '';
                     if (settings.logo_url && settings.logo_url.trim() !== '') {
-                        const logo = document.getElementById('dynamic-logo');
-                        logo.src = settings.logo_url; logo.style.display = 'block';
-                        const favicon = document.getElementById('dynamic-favicon');
-                        if (favicon) favicon.href = settings.logo_url;
+                        document.getElementById('dynamic-logo').src = settings.logo_url;
+                        document.getElementById('dynamic-logo').style.display = 'block';
+                        document.getElementById('dynamic-favicon').href = settings.logo_url;
                     }
                     maxBookingsPerHour = settings.max_bookings_per_hour || 2;
                     salonCurrency = settings.currency || 'ج.م';
                     document.querySelectorAll('.currency-symbol').forEach(el => el.innerText = salonCurrency);
                     
                     evoSettings = {
-                        url: settings.evo_api_url, 
-                        instance: settings.evo_instance_name,
-                        key: settings.evo_api_key, 
-                        template: settings.whatsapp_msg_template
+                        url: settings.evo_api_url, instance: settings.evo_instance_name,
+                        key: settings.evo_api_key, template: settings.whatsapp_msg_template
                     };
                 }
 
@@ -293,52 +267,38 @@
                             div.classList.add('selected');
                             
                             selectedBranch = { 
-                                id: br.id, 
-                                name: br.name, 
-                                open_time: br.open_time || '13:00:00', 
-                                close_time: br.close_time || '23:00:00' 
+                                id: br.id, name: br.name, 
+                                open_time: br.open_time || '13:00:00', close_time: br.close_time || '23:00:00' 
                             };
                             
-                            selectedServices = [];
-                            totalPrice = 0;
-                            updateCartTable();
-                            document.getElementById('booking_date').value = '';
-                            selectedStaff = null;
+                            selectedServices = []; totalPrice = 0; updateCartTable();
+                            document.getElementById('booking_date').value = ''; selectedStaff = null;
                             currentAvailableStaffCount = 0;
-                            
                             renderCategoriesForBranch();
                         };
                         branchesContainer.appendChild(div);
                     });
-                } else {
-                    branchesContainer.innerHTML = '<div style="grid-column: 1/-1; color:red;">لا توجد فروع متاحة حالياً.</div>';
-                }
-
-            } catch (error) { console.error("Error:", error); }
+                } else { branchesContainer.innerHTML = '<div style="grid-column: 1/-1; color:red;">لا توجد فروع.</div>'; }
+            } catch (error) {}
         }
 
         function renderCategoriesForBranch() {
             const container = document.getElementById('categories-container');
             container.innerHTML = '';
-            
             const branchServices = allServices.filter(s => s.branch_id === selectedBranch.id);
             branchCategories = [...new Set(branchServices.map(s => s.category || 'عام'))];
             
             if (branchCategories.length === 0) {
-                container.innerHTML = '<div style="color:gray;">لا توجد خدمات مسجلة لهذا الفرع.</div>';
-                document.getElementById('services-grid').innerHTML = '';
-                return;
+                container.innerHTML = '<div style="color:gray;">لا توجد خدمات.</div>';
+                document.getElementById('services-grid').innerHTML = ''; return;
             }
 
             branchCategories.forEach((cat, index) => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = `cat-btn ${index === 0 ? 'active' : ''}`;
-                btn.innerText = cat;
+                const btn = document.createElement('button'); btn.type = 'button';
+                btn.className = `cat-btn ${index === 0 ? 'active' : ''}`; btn.innerText = cat;
                 btn.onclick = () => {
                     document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    renderServicesByCat(cat);
+                    btn.classList.add('active'); renderServicesByCat(cat);
                 };
                 container.appendChild(btn);
             });
@@ -346,34 +306,21 @@
         }
 
         function renderServicesByCat(category) {
-            const grid = document.getElementById('services-grid');
-            grid.innerHTML = '';
-            
+            const grid = document.getElementById('services-grid'); grid.innerHTML = '';
             const filtered = allServices.filter(s => s.branch_id === selectedBranch.id && (s.category || 'عام') === category);
-            
             filtered.forEach(srv => {
-                const div = document.createElement('div');
-                div.className = 'card-option';
+                const div = document.createElement('div'); div.className = 'card-option';
                 if(selectedServices.some(s => s.id === srv.id)) div.classList.add('selected');
-                
                 div.innerHTML = `<strong>${srv.name}</strong><br><small>${srv.price} ${salonCurrency}</small>`;
-                div.onclick = () => {
-                    toggleServiceSelection(srv);
-                    div.classList.toggle('selected');
-                };
+                div.onclick = () => { toggleServiceSelection(srv); div.classList.toggle('selected'); };
                 grid.appendChild(div);
             });
         }
 
         function toggleServiceSelection(service) {
             const index = selectedServices.findIndex(s => s.id === service.id);
-            if (index > -1) {
-                selectedServices.splice(index, 1);
-                totalPrice -= parseFloat(service.price);
-            } else {
-                selectedServices.push(service);
-                totalPrice += parseFloat(service.price);
-            }
+            if (index > -1) { selectedServices.splice(index, 1); totalPrice -= parseFloat(service.price); } 
+            else { selectedServices.push(service); totalPrice += parseFloat(service.price); }
             updateCartTable();
         }
 
@@ -385,20 +332,11 @@
         }
 
         function updateCartTable() {
-            const tbody = document.getElementById('cart-body');
-            tbody.innerHTML = '';
-            
-            if(selectedServices.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: gray;">لم يتم اختيار خدمات</td></tr>';
-            } else {
+            const tbody = document.getElementById('cart-body'); tbody.innerHTML = '';
+            if(selectedServices.length === 0) { tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: gray;">لم يتم اختيار خدمات</td></tr>'; } 
+            else {
                 selectedServices.forEach(srv => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${srv.name}</td>
-                            <td>${srv.price}</td>
-                            <td><button type="button" class="btn-remove" onclick="removeServiceFromCart(${srv.id})">✖</button></td>
-                        </tr>
-                    `;
+                    tbody.innerHTML += `<tr><td>${srv.name}</td><td>${srv.price}</td><td><button type="button" class="btn-remove" onclick="removeServiceFromCart(${srv.id})">✖</button></td></tr>`;
                 });
             }
             document.getElementById('cart-total').innerText = totalPrice;
@@ -408,14 +346,10 @@
             const date = e.target.value;
             const staffContainer = document.getElementById('staff-container');
             const timeContainer = document.getElementById('time-container');
-            
-            timeContainer.innerHTML = '';
-            selectedTime = null;
-            currentAvailableStaffCount = 0;
+            timeContainer.innerHTML = ''; selectedTime = null; currentAvailableStaffCount = 0;
 
             if (!date) return;
-
-            staffContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center;">جاري فحص الخبراء المتاحين...</div>';
+            staffContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center;">جاري فحص الخبراء...</div>';
 
             try {
                 const { data: staff } = await supabase.from('staff').select('*').eq('branch_id', selectedBranch.id);
@@ -430,12 +364,12 @@
                 defaultDiv.onclick = () => {
                     document.querySelectorAll('#staff-container .card-option').forEach(el => el.classList.remove('selected'));
                     defaultDiv.classList.add('selected');
-                    selectedStaff = { id: null, name: 'غير محدد (يحدد من قبل الإدارة)' };
+                    selectedStaff = { id: null, name: 'غير محدد', start_time: null, end_time: null };
                     loadAvailableTimes();
                 };
                 staffContainer.appendChild(defaultDiv);
                 
-                selectedStaff = { id: null, name: 'غير محدد (يحدد من قبل الإدارة)' };
+                selectedStaff = { id: null, name: 'غير محدد', start_time: null, end_time: null };
 
                 if (staff && staff.length > 0) {
                     staff.forEach(st => {
@@ -447,46 +381,39 @@
                             div.onclick = () => {
                                 document.querySelectorAll('#staff-container .card-option').forEach(el => el.classList.remove('selected'));
                                 div.classList.add('selected');
-                                selectedStaff = { id: st.id, name: st.name };
+                                selectedStaff = { 
+                                    id: st.id, name: st.name, 
+                                    start_time: st.start_time || '13:00:00', end_time: st.end_time || '23:00:00' 
+                                };
                                 loadAvailableTimes(); 
                             };
                             staffContainer.appendChild(div);
                         }
                     });
                 }
-                
                 loadAvailableTimes();
-
-            } catch (error) {
-                console.error("خطأ:", error);
-            }
+            } catch (error) {}
         });
 
         async function loadAvailableTimes() {
             const date = document.getElementById('booking_date').value;
             const timeContainer = document.getElementById('time-container');
-            
             if(!selectedBranch || !date || !selectedStaff) return;
 
-            timeContainer.innerHTML = '<div>جاري تجهيز الأوقات...</div>';
-            selectedTime = null;
+            timeContainer.innerHTML = '<div>جاري تجهيز الأوقات...</div>'; selectedTime = null;
 
             const { data: blocked } = await supabase.from('blocked_hours').select('blocked_time').eq('blocked_date', date);
             const blockedTimes = blocked ? blocked.map(b => b.blocked_time.substring(0,5)) : [];
             
             const { data: bookings } = await supabase.from('bookings').select('booking_time, staff_id')
-                .eq('booking_date', date)
-                .eq('branch_id', selectedBranch.id)
-                .neq('status', 'cancelled'); 
+                .eq('booking_date', date).eq('branch_id', selectedBranch.id).neq('status', 'cancelled'); 
                 
-            const branchBookingCounts = {};
-            const staffBookingCounts = {}; 
+            const branchBookingCounts = {}; const staffBookingCounts = {}; 
 
             if(bookings) {
                 bookings.forEach(b => { 
                     const t = b.booking_time.substring(0,5); 
                     branchBookingCounts[t] = (branchBookingCounts[t] || 0) + 1; 
-                    
                     if (b.staff_id) {
                         if (!staffBookingCounts[b.staff_id]) staffBookingCounts[b.staff_id] = {};
                         staffBookingCounts[b.staff_id][t] = (staffBookingCounts[b.staff_id][t] || 0) + 1;
@@ -496,42 +423,48 @@
 
             timeContainer.innerHTML = '';
             
-            let openHour = parseInt(selectedBranch.open_time.split(':')[0]);
-            let closeHour = parseInt(selectedBranch.close_time.split(':')[0]);
-            const workingHours = [];
+            // تحديد أوقات العمل: إذا تم اختيار موظف نأخذ مواعيده، غير ذلك نأخذ مواعيد الفرع
+            let openHour, closeHour;
+            if (selectedStaff.id !== null && selectedStaff.start_time && selectedStaff.end_time) {
+                openHour = parseInt(selectedStaff.start_time.split(':')[0]);
+                closeHour = parseInt(selectedStaff.end_time.split(':')[0]);
+            } else {
+                openHour = parseInt(selectedBranch.open_time.split(':')[0]);
+                closeHour = parseInt(selectedBranch.close_time.split(':')[0]);
+            }
             
+            const workingHours = [];
             for(let h = openHour; h < closeHour; h++) {
                 workingHours.push(h.toString().padStart(2, '0') + ':00');
             }
             
+            if (workingHours.length === 0) {
+                timeContainer.innerHTML = '<div style="grid-column: 1/-1; color:red; text-align: center;">لا توجد مواعيد عمل متاحة.</div>';
+                return;
+            }
+
             workingHours.forEach(time => {
-                const div = document.createElement('div');
-                div.className = 'card-option';
-                
+                const div = document.createElement('div'); div.className = 'card-option';
                 let isBlocked = false;
 
                 if (blockedTimes.includes(time)) {
                     isBlocked = true;
                 } else if (selectedStaff.id !== null) {
-                    // فحص سعة الموظف المحدد (عدد المرات المتاحة له في الساعة)
                     let sc = (staffBookingCounts[selectedStaff.id] && staffBookingCounts[selectedStaff.id][time]) || 0;
                     if (sc >= maxBookingsPerHour) isBlocked = true;
                 } else {
-                    // فحص سعة الفرع بالكامل في حال اختيار "غير محدد"
                     let maxBranchCap = maxBookingsPerHour * (currentAvailableStaffCount > 0 ? currentAvailableStaffCount : 1);
                     let bc = branchBookingCounts[time] || 0;
                     if (bc >= maxBranchCap) isBlocked = true;
                 }
 
                 if (isBlocked) {
-                    div.classList.add('disabled');
-                    div.innerHTML = `<span>${time}</span><br><small style="color:red;">محجوز</small>`;
+                    div.classList.add('disabled'); div.innerHTML = `<span>${time}</span><br><small style="color:red;">محجوز</small>`;
                 } else {
                     div.innerHTML = `<strong>${time}</strong>`;
                     div.onclick = () => {
                         document.querySelectorAll('#time-container .card-option').forEach(el => el.classList.remove('selected'));
-                        div.classList.add('selected');
-                        selectedTime = time + ':00';
+                        div.classList.add('selected'); selectedTime = time + ':00';
                     };
                 }
                 timeContainer.appendChild(div);
@@ -543,170 +476,104 @@
             document.getElementById('existing-booking-msg').style.display = 'block';
             document.getElementById('existing-booking-msg').classList.add('visible');
 
-            let statusAr = eb.status === 'confirmed' ? 'مؤكد' : 'قيد الانتظار';
-
-            document.getElementById('ex-status').innerText = statusAr;
+            document.getElementById('ex-status').innerText = eb.status === 'confirmed' ? 'مؤكد' : 'قيد الانتظار';
             document.getElementById('ex-name').innerText = eb.customer_name;
             document.getElementById('ex-phone').innerText = `+${eb.phone}`;
             document.getElementById('ex-branch').innerText = eb.branches ? eb.branches.name : 'غير محدد';
             document.getElementById('ex-date').innerText = eb.booking_date;
             document.getElementById('ex-time').innerText = eb.booking_time ? eb.booking_time.substring(0,5) : '';
             document.getElementById('ex-staff').innerText = eb.staff ? eb.staff.name : 'غير محدد (من قبل الإدارة)';
-            document.getElementById('ex-total').innerText = eb.total_price;
 
-            let srvList = '';
-            if(subRes && subRes.length > 0) {
-                srvList = subRes.map(s => `- ${s.service_name} (${s.price})`).join('<br>');
-            } else {
-                srvList = 'غير متوفر';
-            }
+            let srvList = (subRes && subRes.length > 0) ? subRes.map(s => `- ${s.service_name} (${s.price})`).join('<br>') : 'غير متوفر';
             document.getElementById('ex-services').innerHTML = srvList;
         }
 
         async function nextStep() {
             if (currentStep === 1) {
-                if (!selectedBranch) {
-                    alert('الرجاء اختيار الفرع الأقرب لك.'); return;
-                }
-                if (!document.getElementById('customer_name').value || !document.getElementById('customer_phone').value) {
-                    alert('الرجاء إدخال الاسم ورقم الجوال.'); return;
-                }
+                if (!selectedBranch) { alert('الرجاء اختيار الفرع.'); return; }
+                if (!document.getElementById('customer_name').value || !document.getElementById('customer_phone').value) { alert('أدخل الاسم ورقم الجوال.'); return; }
             } else if (currentStep === 2) {
-                if (selectedServices.length === 0) {
-                    alert('الرجاء اختيار خدمة واحدة على الأقل من القوائم.'); return;
-                }
+                if (selectedServices.length === 0) { alert('اختر خدمة واحدة على الأقل.'); return; }
             } else if (currentStep === 3) {
-                if (!document.getElementById('booking_date').value || !selectedStaff) {
-                    alert('الرجاء اختيار التاريخ.'); return;
-                }
+                if (!document.getElementById('booking_date').value || !selectedStaff) { alert('اختر التاريخ الخبير.'); return; }
 
-                // فحص الحجز المسبق في نفس اليوم المختار فقط
-                const btn = document.getElementById('btn-next');
-                const originalText = btn.innerText;
-                btn.innerText = 'جاري التحقق... ⏳';
-                btn.disabled = true;
+                const btn = document.getElementById('btn-next'); const originalText = btn.innerText;
+                btn.innerText = 'جاري التحقق... ⏳'; btn.disabled = true;
 
                 try {
-                    let rawPhone = document.getElementById('customer_phone').value;
-                    let formattedPhone = formatEgyptianPhone(rawPhone);
+                    let formattedPhone = formatEgyptianPhone(document.getElementById('customer_phone').value);
                     const selectedDate = document.getElementById('booking_date').value;
 
-                    const { data: existingBookings } = await supabase
-                        .from('bookings')
+                    const { data: existingBookings } = await supabase.from('bookings')
                         .select('id, customer_name, phone, booking_date, booking_time, total_price, status, branches(name), staff(name)')
-                        .eq('phone', formattedPhone)
-                        .eq('booking_date', selectedDate) // الفحص لنفس اليوم المختار فقط
-                        .in('status', ['pending', 'confirmed'])
-                        .limit(1);
+                        .eq('phone', formattedPhone).eq('booking_date', selectedDate).in('status', ['pending', 'confirmed']).limit(1);
 
                     if (existingBookings && existingBookings.length > 0) {
                         const eb = existingBookings[0];
-                        const { data: subRes } = await supabase
-                            .from('sub_reservation')
-                            .select('service_name, price')
-                            .eq('reservation_id', eb.id);
-
-                        showExistingBooking(eb, subRes);
-                        return; // إيقاف الانتقال
+                        const { data: subRes } = await supabase.from('sub_reservation').select('service_name, price').eq('reservation_id', eb.id);
+                        showExistingBooking(eb, subRes); return; 
                     }
-                } catch (err) {
-                    console.error("Check Error:", err);
-                } finally {
-                    btn.innerText = originalText;
-                    btn.disabled = false;
-                }
-
+                } catch (err) {} finally { btn.innerText = originalText; btn.disabled = false; }
             } else if (currentStep === 4) {
-                if (!selectedTime) {
-                    alert('الرجاء تحديد وقت الحجز.'); return;
-                }
+                if (!selectedTime) { alert('حدد وقت الحجز.'); return; }
                 prepareReviewScreen();
             }
 
             document.getElementById(`step-${currentStep}`).classList.remove('active');
             document.getElementById(`indicator-${currentStep}`).classList.add('completed');
             document.getElementById(`indicator-${currentStep}`).classList.remove('active');
-            
             currentStep++;
-            
             document.getElementById(`step-${currentStep}`).classList.add('active');
             document.getElementById(`indicator-${currentStep}`).classList.add('active');
-            
             updateButtons();
         }
 
         function prevStep() {
             document.getElementById(`step-${currentStep}`).classList.remove('active');
             document.getElementById(`indicator-${currentStep}`).classList.remove('active');
-            
             currentStep--;
-            
             document.getElementById(`step-${currentStep}`).classList.add('active');
             document.getElementById(`indicator-${currentStep}`).classList.remove('completed');
             document.getElementById(`indicator-${currentStep}`).classList.add('active');
-            
             updateButtons();
         }
 
         function updateButtons() {
             document.getElementById('btn-prev').style.display = currentStep === 1 ? 'none' : 'block';
-            
-            if (currentStep === 5) {
-                document.getElementById('btn-next').style.display = 'none';
-                document.getElementById('btn-submit').style.display = 'block';
-            } else {
-                document.getElementById('btn-next').style.display = 'block';
-                document.getElementById('btn-submit').style.display = 'none';
-            }
+            if (currentStep === 5) { document.getElementById('btn-next').style.display = 'none'; document.getElementById('btn-submit').style.display = 'block'; } 
+            else { document.getElementById('btn-next').style.display = 'block'; document.getElementById('btn-submit').style.display = 'none'; }
         }
 
         function prepareReviewScreen() {
-            let rawPhone = document.getElementById('customer_phone').value;
-            let formattedDisplayPhone = formatEgyptianPhone(rawPhone);
-
             document.getElementById('rev-name').innerText = document.getElementById('customer_name').value;
-            document.getElementById('rev-phone').innerText = `+${formattedDisplayPhone}`;
+            document.getElementById('rev-phone').innerText = `+${formatEgyptianPhone(document.getElementById('customer_phone').value)}`;
             document.getElementById('rev-branch').innerText = selectedBranch.name;
             document.getElementById('rev-date').innerText = document.getElementById('booking_date').value;
             document.getElementById('rev-time').innerText = selectedTime.substring(0,5);
             document.getElementById('rev-staff').innerText = selectedStaff.name;
-            
-            const srvList = selectedServices.map(s => `- ${s.name} (${s.price})`).join('<br>');
-            document.getElementById('rev-services').innerHTML = srvList;
+            document.getElementById('rev-services').innerHTML = selectedServices.map(s => `- ${s.name} (${s.price})`).join('<br>');
             document.getElementById('rev-total').innerText = totalPrice;
         }
 
         document.getElementById('wizard-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('btn-submit');
-            btn.innerText = 'جاري التأكيد... ⏳'; btn.disabled = true; document.getElementById('btn-prev').disabled = true;
+            const btn = document.getElementById('btn-submit'); btn.innerText = 'جاري التأكيد... ⏳'; btn.disabled = true; document.getElementById('btn-prev').disabled = true;
 
             const name = document.getElementById('customer_name').value;
-            const rawPhone = document.getElementById('customer_phone').value;
-            const formattedPhone = formatEgyptianPhone(rawPhone);
+            const formattedPhone = formatEgyptianPhone(document.getElementById('customer_phone').value);
             const date = document.getElementById('booking_date').value;
 
             try {
                 const { data: bookingData, error: bookingError } = await supabase.from('bookings').insert([{
-                    customer_name: name, 
-                    phone: formattedPhone, 
-                    booking_date: date, 
-                    booking_time: selectedTime,
-                    total_price: totalPrice, 
-                    staff_id: selectedStaff.id, 
-                    branch_id: selectedBranch.id,
-                    status: 'pending' 
+                    customer_name: name, phone: formattedPhone, booking_date: date, booking_time: selectedTime,
+                    total_price: totalPrice, staff_id: selectedStaff.id, branch_id: selectedBranch.id, status: 'pending' 
                 }]).select();
                 
                 if (bookingError) throw bookingError;
-                
                 const bookingId = bookingData[0].id; 
 
                 const subReservations = selectedServices.map(srv => ({
-                    reservation_id: bookingId,
-                    service_id: srv.id,
-                    service_name: srv.name,
-                    price: srv.price
+                    reservation_id: bookingId, service_id: srv.id, service_name: srv.name, price: srv.price
                 }));
 
                 const { error: subError } = await supabase.from('sub_reservation').insert(subReservations);
@@ -715,43 +582,17 @@
                 document.getElementById('main-container').style.display = 'none';
                 document.getElementById('success-msg').style.display = 'block';
 
-                if (evoSettings.url) {
-                    sendWhatsApp(name, formattedPhone, date, selectedTime, selectedServices, totalPrice);
-                }
-            } catch (err) {
-                alert('حدث خطأ. حاول مرة أخرى.');
-                console.error(err);
-                btn.innerText = 'تأكيد الحجز النهائي'; btn.disabled = false; document.getElementById('btn-prev').disabled = false;
-            }
+                if (evoSettings.url) sendWhatsApp(name, formattedPhone, date, selectedTime, selectedServices, totalPrice);
+            } catch (err) { alert('خطأ. حاول مرة أخرى.'); btn.innerText = 'تأكيد الحجز النهائي'; btn.disabled = false; document.getElementById('btn-prev').disabled = false; }
         });
 
         async function sendWhatsApp(name, phone, date, time, services, price) {
             try {
                 let msg = evoSettings.template || 'تم الحجز بنجاح.';
-                msg = msg.replace(/{name}/g, name)
-                         .replace(/{services}/g, services.map(s=>s.name).join('، '))
-                         .replace(/{date}/g, date)
-                         .replace(/{time}/g, time.substring(0,5))
-                         .replace(/{price}/g, price)
-                         .replace(/{currency}/g, salonCurrency);
-
+                msg = msg.replace(/{name}/g, name).replace(/{services}/g, services.map(s=>s.name).join('، ')).replace(/{date}/g, date).replace(/{time}/g, time.substring(0,5)).replace(/{price}/g, price).replace(/{currency}/g, salonCurrency).replace(/{branch}/g, selectedBranch.name);
                 let apiUrl = evoSettings.url.endsWith('/') ? evoSettings.url.slice(0, -1) : evoSettings.url;
-                let fullEndpoint = `${apiUrl}/message/sendText/${evoSettings.instance}`;
-                
-                const payload = {
-                    "number": phone,
-                    "text": msg
-                };
-
-                await fetch(fullEndpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'apikey': evoSettings.key },
-                    body: JSON.stringify(payload)
-                });
-
-            } catch (e) {
-                console.error("خطأ في إرسال الواتساب:", e.message);
-            }
+                await fetch(`${apiUrl}/message/sendText/${evoSettings.instance}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': evoSettings.key }, body: JSON.stringify({"number": phone, "text": msg}) });
+            } catch (e) {}
         }
     </script>
 </body>
