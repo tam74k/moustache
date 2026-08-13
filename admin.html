@@ -33,7 +33,7 @@
         .auth-toggle-link { color: var(--primary); cursor: pointer; text-decoration: underline; font-size: 0.9rem; margin-top: 15px; display: inline-block; }
 
         /* Dashboard Layout */
-        #dashboard-container { display: none; height: 100vh; width: 100%; display: flex; flex-direction: row; }
+        #dashboard-container { display: none; height: 100vh; width: 100%; flex-direction: row; }
         
         /* Mobile Header */
         .mobile-header { display: none; background: var(--dark); padding: 15px 20px; align-items: center; justify-content: space-between; color: var(--primary); z-index: 100; }
@@ -51,7 +51,6 @@
         .logout-btn { background: #dc3545; color: white; border: none; padding: 15px; text-align: center; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.3s; }
         .logout-btn:hover { background: #c82333; }
 
-        /* Sidebar Backdrop for Mobile */
         .sidebar-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
 
         /* Main Content */
@@ -95,9 +94,16 @@
         .filter-bar input { flex: 1; min-width: 200px; }
         .action-btns { display: flex; gap: 5px; }
 
+        /* Modal (نافذة التعديل) */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; padding: 15px; }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.3s; }
+        .modal-box { background: var(--white); padding: 30px; border-radius: 15px; width: 100%; max-width: 500px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .close-modal-btn { position: absolute; top: 15px; left: 15px; font-size: 1.5rem; cursor: pointer; color: var(--danger); border: none; background: none; transition: 0.2s; }
+        .close-modal-btn:hover { transform: scale(1.1); }
+
         /* Responsive Design */
         @media (max-width: 768px) {
-            #dashboard-container { flex-direction: column; display: none; } /* يظهر بالجافاسكريبت */
+            #dashboard-container { flex-direction: column; display: none; } 
             .mobile-header { display: flex; }
             .sidebar { position: fixed; top: 0; right: -280px; height: 100vh; width: 280px; }
             .sidebar.open { right: 0; }
@@ -110,10 +116,8 @@
 </head>
 <body>
 
-    <!-- 1. شاشات المصادقة (تسجيل الدخول / استعادة كلمة المرور) -->
+    <!-- شاشات المصادقة -->
     <div id="auth-container">
-        
-        <!-- نموذج تسجيل الدخول -->
         <div class="auth-card" id="login-section">
             <i class="fa-solid fa-user-shield" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
             <h2>تسجيل الدخول للإدارة</h2>
@@ -129,7 +133,6 @@
             <span class="auth-toggle-link" onclick="toggleAuth('forgot')">نسيت كلمة المرور؟</span>
         </div>
 
-        <!-- نموذج استعادة كلمة المرور -->
         <div class="auth-card" id="forgot-section" style="display: none;">
             <i class="fa-solid fa-envelope-circle-check" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
             <h2>استعادة كلمة المرور</h2>
@@ -142,23 +145,18 @@
             </form>
             <span class="auth-toggle-link" onclick="toggleAuth('login')">العودة لتسجيل الدخول</span>
         </div>
-
     </div>
 
-
-    <!-- 2. لوحة التحكم الأساسية (تظهر بعد تسجيل الدخول) -->
+    <!-- لوحة التحكم الأساسية -->
     <div id="dashboard-container">
         
-        <!-- هيدر الموبايل -->
         <div class="mobile-header">
             <h2>لوحة التحكم</h2>
             <button class="menu-toggle" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
         </div>
 
-        <!-- خلفية القائمة الجانبية للموبايل -->
         <div class="sidebar-backdrop" onclick="toggleSidebar()"></div>
 
-        <!-- القائمة الجانبية -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h2>نظام الإدارة</h2>
@@ -173,19 +171,16 @@
             <button class="logout-btn" onclick="handleLogout()"><i class="fa-solid fa-sign-out-alt"></i> تسجيل خروج</button>
         </div>
 
-        <!-- المحتوى الرئيسي -->
         <div class="main-content">
             
             <!-- قسم الحجوزات -->
             <section id="bookings" class="section active">
                 <h2 class="page-title">إدارة الحجوزات</h2>
-                
                 <div class="filter-bar">
                     <input type="date" id="filter-date" class="form-control" onchange="loadBookings()">
                     <input type="text" id="filter-search" class="form-control" placeholder="بحث بالاسم أو رقم الموبايل..." onkeyup="loadBookings()">
                     <button class="btn btn-primary" style="width: auto;" onclick="loadBookings()"><i class="fa-solid fa-search"></i> بحث</button>
                 </div>
-
                 <div class="card table-responsive">
                     <table>
                         <thead>
@@ -250,7 +245,6 @@
             <!-- قسم المواعيد والإجازات -->
             <section id="schedule" class="section">
                 <h2 class="page-title">إدارة المواعيد المغلقة والإجازات</h2>
-                
                 <div class="grid-2">
                     <div class="card">
                         <h3><i class="fa-solid fa-ban" style="color:var(--danger)"></i> إغلاق ساعة محددة</h3>
@@ -290,7 +284,6 @@
             <section id="settings" class="section">
                 <h2 class="page-title">الإعدادات والأمان</h2>
                 
-                <!-- تغيير كلمة المرور -->
                 <div class="card" style="border-right: 4px solid var(--danger);">
                     <h3><i class="fa-solid fa-lock" style="color:var(--danger)"></i> تغيير كلمة المرور للحساب</h3><br>
                     <form id="change-password-form" class="grid-2">
@@ -360,6 +353,37 @@
         </div>
     </div>
 
+    <!-- نافذة تعديل بيانات الموظف (Modal) -->
+    <div class="modal-overlay" id="edit-staff-modal">
+        <div class="modal-box">
+            <button class="close-modal-btn" onclick="closeEditStaffModal()"><i class="fa-solid fa-times"></i></button>
+            <h3 style="margin-bottom: 20px; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 10px;">تعديل بيانات الموظف</h3>
+            
+            <form id="edit-staff-form">
+                <input type="hidden" id="edit_staff_id">
+                
+                <div class="form-group">
+                    <label>الاسم</label>
+                    <input type="text" id="edit_staff_name" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>الفرع</label>
+                    <select id="edit_staff_branch" class="form-control" required></select>
+                </div>
+                
+                <div class="form-group">
+                    <label>تغيير الصورة (اختياري)</label>
+                    <input type="file" id="edit_staff_photo_file" class="form-control" accept="image/*">
+                    <img id="edit_staff_photo_preview" src="" style="width: 60px; height: 60px; border-radius: 50%; margin-top: 10px; object-fit: cover;">
+                    <input type="hidden" id="edit_staff_photo_url">
+                </div>
+                
+                <button type="submit" id="btn-update-staff" class="btn btn-primary w-100">حفظ التعديلات</button>
+            </form>
+        </div>
+    </div>
+
     <script>
         var SUPABASE_URL = 'https://slpcgiwspsgpldizfsuh.supabase.co';
         var SUPABASE_ANON_KEY = 'sb_publishable_IH_tJ9ZAMwZJxB4OK2-IcA_WzatxHpQ';
@@ -370,13 +394,10 @@
         /* ==========================================
            1. نظام المصادقة (Authentication)
            ========================================== */
-        
-        // التحقق من حالة الجلسة عند تحميل الصفحة
         document.addEventListener("DOMContentLoaded", async () => {
             const { data: { session } } = await supabase.auth.getSession();
             handleSessionStatus(session);
 
-            // الاستماع لتغييرات المصادقة (مثل تسجيل الخروج أو استعادة كلمة المرور)
             supabase.auth.onAuthStateChange((event, session) => {
                 if (event === 'PASSWORD_RECOVERY') {
                     alert('أهلاً بك! يرجى الذهاب لقسم الإعدادات وتغيير كلمة المرور الخاصة بك الآن.');
@@ -390,102 +411,69 @@
             const dashboardContainer = document.getElementById('dashboard-container');
             
             if (session) {
-                // مستخدم مسجل الدخول
                 authContainer.style.display = 'none';
                 dashboardContainer.style.display = 'flex';
                 document.getElementById('admin-email-display').innerText = session.user.email;
-                
-                // تعيين التاريخ الافتراضي للفلتر
                 document.getElementById('filter-date').value = new Date().toISOString().split('T')[0];
-                
-                // تحميل بيانات اللوحة
                 initDashboard();
             } else {
-                // غير مسجل الدخول
                 authContainer.style.display = 'flex';
                 dashboardContainer.style.display = 'none';
             }
         }
 
-        // التبديل بين شاشات المصادقة
         function toggleAuth(type) {
             document.getElementById('login-section').style.display = type === 'login' ? 'block' : 'none';
             document.getElementById('forgot-section').style.display = type === 'forgot' ? 'block' : 'none';
         }
 
-        // تسجيل الدخول
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-login');
             btn.innerText = 'جاري الدخول...'; btn.disabled = true;
-            
             const email = document.getElementById('login_email').value;
             const password = document.getElementById('login_password').value;
-
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) {
-                alert('خطأ في تسجيل الدخول: البريد الإلكتروني أو كلمة المرور غير صحيحة.');
+                alert('خطأ: البريد الإلكتروني أو كلمة المرور غير صحيحة.');
                 btn.innerText = 'دخول'; btn.disabled = false;
             }
         });
 
-        // تسجيل الخروج
         async function handleLogout() {
-            if(!confirm('هل تريد تسجيل الخروج من لوحة التحكم؟')) return;
+            if(!confirm('هل تريد تسجيل الخروج؟')) return;
             await supabase.auth.signOut();
             window.location.reload();
         }
 
-        // استعادة كلمة المرور
         document.getElementById('forgot-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-forgot');
             btn.innerText = 'جاري الإرسال...'; btn.disabled = true;
-            
             const email = document.getElementById('forgot_email').value;
-            
-            // سيتم إرسال الرابط للإيميل، وعند الضغط عليه سيعود لهذه الصفحة مسجلاً الدخول
-            const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.href,
-            });
-
-            if (error) {
-                alert('حدث خطأ. تأكد من صحة البريد الإلكتروني.');
-            } else {
-                alert('تم إرسال رابط استعادة كلمة المرور إلى بريدك الإلكتروني.');
-                toggleAuth('login');
-            }
+            const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
+            if (error) alert('خطأ. تأكد من صحة البريد.');
+            else { alert('تم إرسال رابط الاستعادة لبريدك.'); toggleAuth('login'); }
             btn.innerText = 'إرسال رابط الاستعادة'; btn.disabled = false;
         });
 
-        // تغيير كلمة المرور من داخل اللوحة
         document.getElementById('change-password-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-change-pwd');
             btn.innerText = 'جاري التحديث...'; btn.disabled = true;
-
             const newPassword = document.getElementById('new_password').value;
-
             const { error } = await supabase.auth.updateUser({ password: newPassword });
-            
-            if (error) {
-                alert('حدث خطأ أثناء تغيير كلمة المرور: ' + error.message);
-            } else {
-                alert('تم تحديث كلمة المرور بنجاح!');
-                document.getElementById('change-password-form').reset();
-            }
+            if (error) alert('خطأ: ' + error.message);
+            else { alert('تم تحديث كلمة المرور بنجاح!'); document.getElementById('change-password-form').reset(); }
             btn.innerText = 'تحديث كلمة المرور'; btn.disabled = false;
         });
 
         /* ==========================================
-           2. دوال الواجهة المتجاوبة (Mobile Support)
+           2. دوال الواجهة المتجاوبة
            ========================================== */
         function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const backdrop = document.querySelector('.sidebar-backdrop');
-            sidebar.classList.toggle('open');
-            backdrop.classList.toggle('active');
+            document.getElementById('sidebar').classList.toggle('open');
+            document.querySelector('.sidebar-backdrop').classList.toggle('active');
         }
 
         function switchTab(tabId, el) {
@@ -493,15 +481,11 @@
             document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             el.classList.add('active');
-            
-            // إغلاق القائمة الجانبية في الموبايل عند اختيار قسم
-            if (window.innerWidth <= 768) {
-                toggleSidebar();
-            }
+            if (window.innerWidth <= 768) toggleSidebar();
         }
 
         /* ==========================================
-           3. وظائف لوحة التحكم (البيانات)
+           3. وظائف الإدارة والبيانات
            ========================================== */
         async function initDashboard() {
             await loadBranches();
@@ -510,12 +494,11 @@
             loadSettings();
         }
 
-        // رفع الملفات
         async function uploadFileToSupabase(file, bucketName) {
             const fileExt = file.name.split('.').pop();
             const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-            const { error: uploadError } = await supabase.storage.from(bucketName).upload(fileName, file);
-            if (uploadError) throw uploadError;
+            const { error } = await supabase.storage.from(bucketName).upload(fileName, file);
+            if (error) throw error;
             const { data } = supabase.storage.from(bucketName).getPublicUrl(fileName);
             return data.publicUrl;
         }
@@ -524,14 +507,12 @@
         async function loadBookings() {
             const tbody = document.getElementById('bookings-tbody');
             tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">جاري التحميل...</td></tr>';
-
             const date = document.getElementById('filter-date').value;
             const search = document.getElementById('filter-search').value.trim();
 
             try {
                 let query = supabase.from('bookings').select(`
-                    id, customer_name, phone, booking_date, booking_time, total_price, status,
-                    branches(name), staff(name)
+                    id, customer_name, phone, booking_date, booking_time, total_price, status, branches(name), staff(name)
                 `).order('booking_time', { ascending: true });
 
                 if (date) query = query.eq('booking_date', date);
@@ -541,33 +522,25 @@
                 if (error) throw error;
 
                 tbody.innerHTML = '';
-                if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">لا توجد حجوزات.</td></tr>';
-                    return;
-                }
+                if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">لا توجد حجوزات.</td></tr>'; return; }
 
                 data.forEach(b => {
                     let statusBadge = ''; let actionBtns = '';
                     if(b.status === 'pending') {
                         statusBadge = '<span class="badge bg-warning">قيد الانتظار</span>';
-                        actionBtns = `
-                            <button class="btn btn-sm btn-success" onclick="updateStatus('${b.id}', 'confirmed')" title="تأكيد"><i class="fa-solid fa-check"></i></button>
-                            <button class="btn btn-sm btn-danger" onclick="updateStatus('${b.id}', 'cancelled')" title="إلغاء"><i class="fa-solid fa-times"></i></button>`;
+                        actionBtns = `<button class="btn btn-sm btn-success" onclick="updateStatus('${b.id}', 'confirmed')" title="تأكيد"><i class="fa-solid fa-check"></i></button> <button class="btn btn-sm btn-danger" onclick="updateStatus('${b.id}', 'cancelled')" title="إلغاء"><i class="fa-solid fa-times"></i></button>`;
                     } else if(b.status === 'confirmed') {
                         statusBadge = '<span class="badge bg-success">مؤكد</span>';
-                        actionBtns = `
-                            <button class="btn btn-sm bg-info" style="color:white;" onclick="updateStatus('${b.id}', 'completed')" title="إنهاء"><i class="fa-solid fa-flag-checkered"></i></button>
-                            <button class="btn btn-sm btn-danger" onclick="updateStatus('${b.id}', 'cancelled')" title="إلغاء"><i class="fa-solid fa-times"></i></button>`;
+                        actionBtns = `<button class="btn btn-sm bg-info" style="color:white;" onclick="updateStatus('${b.id}', 'completed')" title="إنهاء"><i class="fa-solid fa-flag-checkered"></i></button> <button class="btn btn-sm btn-danger" onclick="updateStatus('${b.id}', 'cancelled')" title="إلغاء"><i class="fa-solid fa-times"></i></button>`;
                     } else if(b.status === 'completed') {
                         statusBadge = '<span class="badge bg-info">منتهي</span>'; actionBtns = '<span style="color:gray;">مكتمل</span>';
                     } else {
                         statusBadge = '<span class="badge bg-danger">ملغي</span>'; actionBtns = '<span style="color:gray;">مغلق</span>';
                     }
 
-                    const shortId = b.id.split('-')[0].toUpperCase();
                     tbody.innerHTML += `
                         <tr>
-                            <td><strong style="color:var(--primary)">#${shortId}</strong></td>
+                            <td><strong style="color:var(--primary)">#${b.id.split('-')[0].toUpperCase()}</strong></td>
                             <td>${b.customer_name}</td>
                             <td dir="ltr">+${b.phone}</td>
                             <td>${b.booking_date} <br> <small>${b.booking_time.substring(0,5)}</small></td>
@@ -583,23 +556,23 @@
 
         async function updateStatus(id, newStatus) {
             if(!confirm('تأكيد تغيير حالة الحجز؟')) return;
-            try {
-                const { error } = await supabase.from('bookings').update({ status: newStatus }).eq('id', id);
-                if(error) throw error;
-                loadBookings();
-            } catch (err) { alert('خطأ أثناء تعديل الحالة.'); }
+            try { await supabase.from('bookings').update({ status: newStatus }).eq('id', id); loadBookings(); } catch (err) { alert('خطأ.'); }
         }
 
         /* --- الموظفين والفروع --- */
         async function loadBranches() {
             const { data } = await supabase.from('branches').select('*');
             globalBranches = data || [];
+            
             const stSel = document.getElementById('new_staff_branch');
             const edSel = document.getElementById('edit_branch_select');
-            stSel.innerHTML = edSel.innerHTML = '<option value="">اختر الفرع...</option>';
+            const modalSel = document.getElementById('edit_staff_branch'); // للنافذة المنبثقة
+            
+            stSel.innerHTML = edSel.innerHTML = modalSel.innerHTML = '<option value="">اختر الفرع...</option>';
             globalBranches.forEach(br => {
                 stSel.innerHTML += `<option value="${br.id}">${br.name}</option>`;
                 edSel.innerHTML += `<option value="${br.id}">${br.name}</option>`;
+                modalSel.innerHTML += `<option value="${br.id}">${br.name}</option>`;
             });
         }
 
@@ -607,36 +580,85 @@
             const tbody = document.getElementById('staff-tbody');
             const lSel = document.getElementById('leave_staff_id');
             const { data } = await supabase.from('staff').select('*, branches(name)');
+            
             tbody.innerHTML = ''; lSel.innerHTML = '<option value="">اختر الموظف...</option>';
             if(data) {
                 data.forEach(st => {
                     lSel.innerHTML += `<option value="${st.id}">${st.name} - ${st.branches ? st.branches.name : ''}</option>`;
+                    
+                    // تمرير البيانات لدالة التعديل (تحويل الرابط لنص آمن)
+                    const safePhoto = st.photo_url ? st.photo_url.replace(/'/g, "\\'") : '';
+                    const safeName = st.name.replace(/'/g, "\\'");
+                    
                     tbody.innerHTML += `
                         <tr>
                             <td><img src="${st.photo_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;"></td>
                             <td>${st.name}</td>
                             <td>${st.branches ? st.branches.name : '-'}</td>
-                            <td><button class="btn btn-sm btn-danger" onclick="deleteStaff(${st.id})"><i class="fa-solid fa-trash"></i></button></td>
+                            <td class="action-btns">
+                                <button class="btn btn-sm bg-info" style="color:white;" onclick="openEditStaffModal('${st.id}', '${safeName}', '${st.branch_id}', '${safePhoto}')" title="تعديل"><i class="fa-solid fa-pen"></i></button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteStaff(${st.id})" title="حذف"><i class="fa-solid fa-trash"></i></button>
+                            </td>
                         </tr>
                     `;
                 });
             }
         }
 
+        // إضافة موظف جديد
         document.getElementById('add-staff-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('btn-submit-staff');
-            btn.innerText = 'جاري الإضافة...'; btn.disabled = true;
+            const btn = document.getElementById('btn-submit-staff'); btn.innerText = 'جاري الإضافة...'; btn.disabled = true;
             try {
                 const name = document.getElementById('new_staff_name').value;
                 const branch_id = document.getElementById('new_staff_branch').value;
                 const file = document.getElementById('new_staff_photo_file').files[0];
                 let photo_url = 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
                 if (file) photo_url = await uploadFileToSupabase(file, 'staff');
+                
                 const { error } = await supabase.from('staff').insert([{ name, branch_id, photo_url }]);
                 if(error) throw error;
                 alert('تم الإضافة'); document.getElementById('add-staff-form').reset(); loadStaff();
             } catch(err) { alert('خطأ'); } finally { btn.innerHTML = '<i class="fa-solid fa-plus"></i> إضافة الموظف'; btn.disabled = false; }
+        });
+
+        // تعديل موظف حالي
+        function openEditStaffModal(id, name, branch_id, photo_url) {
+            document.getElementById('edit_staff_id').value = id;
+            document.getElementById('edit_staff_name').value = name;
+            document.getElementById('edit_staff_branch').value = branch_id;
+            
+            const defImg = 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+            document.getElementById('edit_staff_photo_url').value = photo_url || defImg;
+            document.getElementById('edit_staff_photo_preview').src = photo_url || defImg;
+            document.getElementById('edit_staff_photo_file').value = ''; 
+            
+            document.getElementById('edit-staff-modal').classList.add('active');
+        }
+
+        function closeEditStaffModal() {
+            document.getElementById('edit-staff-modal').classList.remove('active');
+        }
+
+        document.getElementById('edit-staff-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-update-staff'); btn.innerText = 'جاري الحفظ...'; btn.disabled = true;
+            try {
+                const id = document.getElementById('edit_staff_id').value;
+                const name = document.getElementById('edit_staff_name').value;
+                const branch_id = document.getElementById('edit_staff_branch').value;
+                const file = document.getElementById('edit_staff_photo_file').files[0];
+                
+                let photo_url = document.getElementById('edit_staff_photo_url').value;
+                if (file) photo_url = await uploadFileToSupabase(file, 'staff');
+
+                const { error } = await supabase.from('staff').update({ name, branch_id, photo_url }).eq('id', id);
+                if (error) throw error;
+
+                alert('تم التعديل بنجاح');
+                closeEditStaffModal();
+                loadStaff();
+            } catch (err) { alert('خطأ أثناء التعديل'); } finally { btn.innerText = 'حفظ التعديلات'; btn.disabled = false; }
         });
 
         async function deleteStaff(id) {
