@@ -363,9 +363,15 @@
 
 
     <script>
-        var SUPABASE_URL = 'https://slpcgiwspsgpldizfsuh.supabase.co';
-        var SUPABASE_ANON_KEY = 'sb_publishable_IH_tJ9ZAMwZJxB4OK2-IcA_WzatxHpQ';
-        var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+       var SUPABASE_URL = 'https://slpcgiwspsgpldizfsuh.supabase.co';
+var SUPABASE_ANON_KEY = 'sb_publishable_IH_tJ9ZAMwZJxB4OK2-IcA_WzatxHpQ';
+
+// إضافة إعدادات الـ auth لجعل الجلسة مؤقتة (تنتهي بإغلاق المتصفح)
+var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+        storage: window.sessionStorage 
+    }
+});
 
         let globalBranches = [];
         let salonConfig = null; 
