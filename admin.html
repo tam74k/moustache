@@ -92,7 +92,7 @@
         .filter-bar .form-group { margin-bottom: 0; flex: 1; min-width: 150px; }
         .action-btns { display: flex; gap: 5px; }
 
-        /* Modal */
+        /* Modals */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; padding: 15px; }
         .modal-overlay.active { display: flex; animation: fadeIn 0.3s; }
         .modal-box { background: var(--white); padding: 30px; border-radius: 15px; width: 100%; max-width: 600px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; }
@@ -226,7 +226,7 @@
                 </div>
             </section>
 
-            <!-- باقي أقسام الإدارة مخفية للاختصار، لم نغير بها شيء في هذا الطلب -->
+            <!-- قسم الموظفين -->
             <section id="staff" class="section">
                 <h2 class="page-title">إدارة الموظفين</h2>
                 <div class="card">
@@ -248,6 +248,7 @@
                 </div>
             </section>
 
+            <!-- قسم الجداول -->
             <section id="schedule" class="section">
                 <h2 class="page-title">إدارة المواعيد المغلقة والإجازات</h2>
                 <div class="grid-2">
@@ -270,6 +271,7 @@
                 </div>
             </section>
 
+            <!-- قسم الإعدادات -->
             <section id="settings" class="section">
                 <h2 class="page-title">الإعدادات والأمان</h2>
                 <div class="card" style="border-right: 4px solid var(--danger);">
@@ -303,7 +305,7 @@
         </div>
     </div>
 
-    <!-- نافذة تعديل بيانات الموظف (تم اخفائها هنا للاختصار، وهي نفس الكود السابق) -->
+    <!-- نافذة تعديل بيانات الموظف -->
     <div class="modal-overlay" id="edit-staff-modal">
         <div class="modal-box">
             <button class="close-modal-btn" onclick="closeEditStaffModal()"><i class="fa-solid fa-times"></i></button>
@@ -320,7 +322,7 @@
         </div>
     </div>
 
-    <!-- نافذة تفاصيل وتعديل الحجز (الجديدة) -->
+    <!-- نافذة تفاصيل وتعديل الحجز -->
     <div class="modal-overlay" id="booking-details-modal">
         <div class="modal-box">
             <button class="close-modal-btn" onclick="closeBookingDetails()"><i class="fa-solid fa-times"></i></button>
@@ -345,7 +347,6 @@
                     </div>
                     <div class="form-group">
                         <label>وقت الحجز</label>
-                        <!-- السماح للادمن باختيار أي وقت مباشرة -->
                         <input type="time" id="edit_b_time" class="form-control" required>
                     </div>
                     <div class="form-group" style="grid-column: 1/-1;">
@@ -367,7 +368,7 @@
         var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let globalBranches = [];
-        let salonConfig = null; // للاحتفاظ بإعدادات الصالون عالمياً (لاسم الصالون و API)
+        let salonConfig = null; 
 
         /* ==========================================
            1. نظام المصادقة والإعدادات
@@ -375,8 +376,6 @@
         document.addEventListener("DOMContentLoaded", async () => {
             const { data: { session } } = await supabase.auth.getSession();
             handleSessionStatus(session);
-
-            // افتراضياً تعيين فلتر (من تاريخ) لتاريخ اليوم
             document.getElementById('filter-start-date').value = new Date().toISOString().split('T')[0];
         });
 
@@ -394,7 +393,6 @@
             }
         }
 
-        // دوال المصادقة السابقة (Login, Logout, Forgot, Change Password) - تم اختصارها
         document.getElementById('login-form').addEventListener('submit', async (e) => { e.preventDefault(); const email = document.getElementById('login_email').value; const password = document.getElementById('login_password').value; const { error } = await supabase.auth.signInWithPassword({ email, password }); if (error) alert('خطأ في التسجيل.'); });
         async function handleLogout() { if(confirm('تسجيل خروج؟')) { await supabase.auth.signOut(); window.location.reload(); } }
         function toggleAuth(type) { document.getElementById('login-section').style.display = type === 'login' ? 'block' : 'none'; document.getElementById('forgot-section').style.display = type === 'forgot' ? 'block' : 'none'; }
@@ -404,23 +402,30 @@
         function switchTab(tabId, el) { document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active')); document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active')); document.getElementById(tabId).classList.add('active'); el.classList.add('active'); if (window.innerWidth <= 768) toggleSidebar(); }
 
         async function initDashboard() {
-            // جلب الإعدادات للاحتفاظ بها للواتساب
             const { data: set } = await supabase.from('salon_settings').select('*').limit(1).single();
             salonConfig = set;
-
             await loadBranches();
             loadBookings();
             loadStaff();
             loadSettings();
         }
 
+        /* دالة الرفع الموحدة للـ Storage */
+        async function uploadFileToSupabase(file, bucketName) {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+            const { error } = await supabase.storage.from(bucketName).upload(fileName, file);
+            if (error) throw error;
+            const { data } = supabase.storage.from(bucketName).getPublicUrl(fileName);
+            return data.publicUrl;
+        }
+
         /* ==========================================
-           2. نظام الواتساب الذكي للإدارة
+           2. نظام الواتساب للإدارة
            ========================================== */
         async function sendAdminWhatsApp(phone, type, bookingData, servicesStr) {
             if (!salonConfig || !salonConfig.evo_api_url) return;
 
-            // تنسيق الرسالة
             let msg = `*${salonConfig.salon_name}*\n\n`;
             let staffName = bookingData.staff ? bookingData.staff.name : 'غير محدد';
             let branchName = bookingData.branches ? bookingData.branches.name : '';
@@ -435,7 +440,7 @@
             } else if(type === 'edited') {
                 msg += `🔄 تم تعديل بيانات حجزك بناءً على طلبك، وهذه هي التفاصيل الجديدة:\n\n${details}`;
             } else {
-                return; // لا ترسل شيء في الحالات الأخرى
+                return;
             }
 
             try {
@@ -445,15 +450,11 @@
                     headers: { 'Content-Type': 'application/json', 'apikey': salonConfig.evo_api_key },
                     body: JSON.stringify({ "number": phone, "text": msg })
                 });
-                console.log('WhatsApp sent successfully.');
-            } catch (e) {
-                console.error("WhatsApp Send Error:", e);
-            }
+            } catch (e) { console.error("WhatsApp Error:", e); }
         }
 
-
         /* ==========================================
-           3. إدارة الحجوزات (الفلاتر والعرض والتعديل)
+           3. إدارة الحجوزات
            ========================================== */
         async function loadBookings() {
             const tbody = document.getElementById('bookings-tbody');
@@ -465,11 +466,8 @@
             const search = document.getElementById('filter-search').value.trim();
 
             try {
-                let query = supabase.from('bookings').select(`
-                    id, customer_name, phone, booking_date, booking_time, total_price, status, branches(name), staff(name)
-                `).order('booking_date', { ascending: false }).order('booking_time', { ascending: true });
+                let query = supabase.from('bookings').select(`id, customer_name, phone, booking_date, booking_time, total_price, status, branches(name), staff(name)`).order('booking_date', { ascending: false }).order('booking_time', { ascending: true });
 
-                // تطبيق الفلاتر
                 if (startDate) query = query.gte('booking_date', startDate);
                 if (endDate) query = query.lte('booking_date', endDate);
                 if (status) query = query.eq('status', status);
@@ -479,27 +477,22 @@
                 if (error) throw error;
 
                 tbody.innerHTML = '';
-                if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">لا يوجد حجوزات تطابق الفلاتر.</td></tr>'; return; }
+                if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">لا يوجد حجوزات.</td></tr>'; return; }
 
                 data.forEach(b => {
                     let statusBadge = '', actionBtns = '';
                     if(b.status === 'pending') {
                         statusBadge = '<span class="badge bg-warning">انتظار</span>'; 
-                        actionBtns = `
-                            <button class="btn btn-sm btn-success" onclick="updateStatus('${b.id}', 'confirmed')" title="تأكيد"><i class="fa-solid fa-check"></i></button> 
-                            <button class="btn btn-sm btn-danger" onclick="updateStatus('${b.id}', 'cancelled')" title="إلغاء"><i class="fa-solid fa-times"></i></button>`;
+                        actionBtns = `<button class="btn btn-sm btn-success" onclick="updateStatus('${b.id}', 'confirmed')" title="تأكيد"><i class="fa-solid fa-check"></i></button> <button class="btn btn-sm btn-danger" onclick="updateStatus('${b.id}', 'cancelled')" title="إلغاء"><i class="fa-solid fa-times"></i></button>`;
                     } else if(b.status === 'confirmed') {
                         statusBadge = '<span class="badge bg-success">مؤكد</span>'; 
-                        actionBtns = `
-                            <button class="btn btn-sm bg-info" style="color:white;" onclick="updateStatus('${b.id}', 'completed')" title="إنهاء"><i class="fa-solid fa-flag-checkered"></i></button> 
-                            <button class="btn btn-sm btn-danger" onclick="updateStatus('${b.id}', 'cancelled')" title="إلغاء"><i class="fa-solid fa-times"></i></button>`;
+                        actionBtns = `<button class="btn btn-sm bg-info" style="color:white;" onclick="updateStatus('${b.id}', 'completed')" title="إنهاء"><i class="fa-solid fa-flag-checkered"></i></button> <button class="btn btn-sm btn-danger" onclick="updateStatus('${b.id}', 'cancelled')" title="إلغاء"><i class="fa-solid fa-times"></i></button>`;
                     } else if(b.status === 'completed') {
                         statusBadge = '<span class="badge bg-info">منتهي</span>'; actionBtns = '<span style="color:gray;">مكتمل</span>';
                     } else {
                         statusBadge = '<span class="badge bg-danger">ملغي</span>'; actionBtns = '<span style="color:gray;">مغلق</span>';
                     }
 
-                    // زر عرض التفاصيل والتعديل الجديد
                     actionBtns += ` <button class="btn btn-sm" style="background:#555; color:#fff; margin-right:5px;" onclick="openBookingDetails('${b.id}')" title="عرض وتعديل التفاصيل"><i class="fa-solid fa-pen-to-square"></i></button>`;
 
                     tbody.innerHTML += `<tr>
@@ -513,85 +506,54 @@
             } catch (err) { tbody.innerHTML = '<tr><td colspan="8" style="color:red; text-align:center;">خطأ في جلب البيانات.</td></tr>'; }
         }
 
-        // تحديث الحالة مع الإشعارات
         async function updateStatus(id, newStatus) {
-            if(!confirm('هل أنت متأكد من تغيير حالة الحجز؟')) return;
+            if(!confirm('تأكيد تغيير الحالة؟')) return;
             try { 
                 await supabase.from('bookings').update({ status: newStatus }).eq('id', id); 
-                
-                // جلب البيانات لإرسال واتساب إذا كان مؤكد أو ملغي
                 if(['confirmed', 'cancelled'].includes(newStatus)) {
                     const { data: b } = await supabase.from('bookings').select('*, branches(name), staff(name)').eq('id', id).single();
                     const { data: subRes } = await supabase.from('sub_reservation').select('service_name').eq('reservation_id', id);
                     let servicesStr = subRes.map(s => s.service_name).join('، ');
-                    
                     await sendAdminWhatsApp(b.phone, newStatus, b, servicesStr);
                 }
-
                 loadBookings(); 
-            } catch (err) { alert('حدث خطأ أثناء تحديث الحالة.'); }
+            } catch (err) { alert('خطأ.'); }
         }
 
-        /* نافذة تفاصيل وتعديل الحجز */
         async function openBookingDetails(id) {
             document.getElementById('booking-details-modal').classList.add('active');
-            
-            // تصفير البيانات
-            document.getElementById('bd-static-info').innerHTML = 'جاري تحميل البيانات...';
+            document.getElementById('bd-static-info').innerHTML = 'جاري التحميل...';
             document.getElementById('bd-services-list').innerHTML = '';
             document.getElementById('edit_b_staff').innerHTML = '<option value="">غير محدد</option>';
 
             try {
-                // جلب الحجز
                 const { data: b } = await supabase.from('bookings').select('*, branches(name), staff(name)').eq('id', id).single();
-                // جلب الخدمات
                 const { data: subRes } = await supabase.from('sub_reservation').select('*').eq('reservation_id', id);
 
-                // تعبئة البيانات الثابتة
-                document.getElementById('bd-static-info').innerHTML = `
-                    <strong>اسم العميل:</strong> ${b.customer_name} <br>
-                    <strong>رقم الجوال:</strong> <span dir="ltr">+${b.phone}</span> <br>
-                    <strong>الفرع:</strong> ${b.branches ? b.branches.name : ''} <br>
-                    <strong>إجمالي التكلفة:</strong> <span style="color:var(--primary); font-weight:bold;">${b.total_price} ${salonConfig.currency}</span>
-                `;
+                document.getElementById('bd-static-info').innerHTML = `<strong>الاسم:</strong> ${b.customer_name} <br> <strong>الجوال:</strong> <span dir="ltr">+${b.phone}</span> <br> <strong>الفرع:</strong> ${b.branches ? b.branches.name : ''} <br> <strong>الإجمالي:</strong> <span style="color:var(--primary); font-weight:bold;">${b.total_price} ${salonConfig.currency}</span>`;
 
-                // تعبئة الخدمات
                 if(subRes && subRes.length > 0) {
-                    subRes.forEach(s => {
-                        document.getElementById('bd-services-list').innerHTML += `<li>${s.service_name} <span style="float:left;">${s.price} ${salonConfig.currency}</span></li>`;
-                    });
-                } else {
-                    document.getElementById('bd-services-list').innerHTML = '<li>لا توجد خدمات مسجلة</li>';
-                }
+                    subRes.forEach(s => { document.getElementById('bd-services-list').innerHTML += `<li>${s.service_name} <span style="float:left;">${s.price} ${salonConfig.currency}</span></li>`; });
+                } else { document.getElementById('bd-services-list').innerHTML = '<li>لا توجد خدمات مسجلة</li>'; }
 
-                // تعبئة حقول التعديل المخفية والظاهرة
                 document.getElementById('edit_b_id').value = b.id;
                 document.getElementById('edit_b_branch_id').value = b.branch_id;
                 document.getElementById('edit_b_date').value = b.booking_date;
                 document.getElementById('edit_b_time').value = b.booking_time ? b.booking_time.substring(0,5) : '';
 
-                // تحميل الموظفين لهذا الفرع والتاريخ، وتحديد الموظف الحالي
                 await loadAdminModalStaff(b.staff_id);
-
-            } catch (err) {
-                document.getElementById('bd-static-info').innerHTML = '<span style="color:red;">حدث خطأ في تحميل بيانات الحجز.</span>';
-            }
+            } catch (err) { document.getElementById('bd-static-info').innerHTML = '<span style="color:red;">خطأ.</span>'; }
         }
 
-        function closeBookingDetails() {
-            document.getElementById('booking-details-modal').classList.remove('active');
-        }
+        function closeBookingDetails() { document.getElementById('booking-details-modal').classList.remove('active'); }
 
-        // جلب موظفي الفرع في نافذة التعديل
         async function loadAdminModalStaff(currentStaffId = null) {
             const branchId = document.getElementById('edit_b_branch_id').value;
             const selectStaff = document.getElementById('edit_b_staff');
-            
             selectStaff.innerHTML = '<option value="">غير محدد</option>';
             if(!branchId) return;
 
             try {
-                // للإدارة نجلب كل الموظفين في الفرع، ويمكن للإدارة تجاهل الإجازات لأنها تملك الصلاحية للتدخل اليدوي
                 const { data: staff } = await supabase.from('staff').select('id, name').eq('branch_id', branchId);
                 if(staff) {
                     staff.forEach(st => {
@@ -599,64 +561,140 @@
                         selectStaff.innerHTML += `<option value="${st.id}" ${selected}>${st.name}</option>`;
                     });
                 }
-            } catch (err) { console.error(err); }
+            } catch (err) {}
         }
 
-        // حفظ التعديلات وإرسال الإشعار
         document.getElementById('edit-booking-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('btn-update-booking');
-            btn.innerText = 'جاري الحفظ والإرسال... ⏳'; btn.disabled = true;
+            const btn = document.getElementById('btn-update-booking'); btn.innerText = 'جاري الحفظ... ⏳'; btn.disabled = true;
 
             const id = document.getElementById('edit_b_id').value;
             const newDate = document.getElementById('edit_b_date').value;
             const newTime = document.getElementById('edit_b_time').value;
             let newStaff = document.getElementById('edit_b_staff').value;
-            
-            // تحويل القيمة الفارغة إلى null لكي يقبلها النظام كـ "غير محدد"
             if(newStaff === "") newStaff = null;
 
             try {
-                // 1. تحديث الحجز في قاعدة البيانات
-                const { error } = await supabase.from('bookings').update({
-                    booking_date: newDate,
-                    booking_time: newTime,
-                    staff_id: newStaff
-                }).eq('id', id);
-
+                const { error } = await supabase.from('bookings').update({ booking_date: newDate, booking_time: newTime, staff_id: newStaff }).eq('id', id);
                 if (error) throw error;
 
-                // 2. جلب البيانات الجديدة المحدثة والخدمات لإرسال رسالة الواتساب
                 const { data: b } = await supabase.from('bookings').select('*, branches(name), staff(name)').eq('id', id).single();
                 const { data: subRes } = await supabase.from('sub_reservation').select('service_name').eq('reservation_id', id);
                 let servicesStr = subRes.map(s => s.service_name).join('، ');
 
                 await sendAdminWhatsApp(b.phone, 'edited', b, servicesStr);
 
-                alert('تم التحديث وإرسال إشعار للعميل بنجاح.');
-                closeBookingDetails();
-                loadBookings(); // تحديث الجدول
-
-            } catch (err) {
-                alert('حدث خطأ أثناء حفظ التعديلات.');
-            } finally {
-                btn.innerText = 'حفظ التعديلات وإرسال إشعار للعميل'; btn.disabled = false;
-            }
+                alert('تم التحديث وإرسال إشعار.'); closeBookingDetails(); loadBookings();
+            } catch (err) { alert('خطأ.'); } finally { btn.innerText = 'حفظ التعديلات وإرسال إشعار للعميل'; btn.disabled = false; }
         });
 
-        /* --- باقي دوال الموظفين والإعدادات كما كانت في السابق مخفية هنا للاختصار، لكنك يجب أن تبقيها --- */
-        // (لا تغير دوال loadSettings, addStaff, changePassword الخ)
-        
-        // للاختصار فقط سأضع دالة الرفع التي تستخدمها بقية النماذج
-        async function uploadFileToSupabase(file, bucketName) {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-            const { error } = await supabase.storage.from(bucketName).upload(fileName, file);
-            if (error) throw error;
-            const { data } = supabase.storage.from(bucketName).getPublicUrl(fileName);
-            return data.publicUrl;
+        /* ==========================================
+           4. إدارة الموظفين والفروع
+           ========================================== */
+        async function loadBranches() {
+            const { data } = await supabase.from('branches').select('*');
+            globalBranches = data || [];
+            const stSel = document.getElementById('new_staff_branch'), edSel = document.getElementById('edit_branch_select'), modSel = document.getElementById('edit_staff_branch');
+            stSel.innerHTML = edSel.innerHTML = modSel.innerHTML = '<option value="">اختر الفرع...</option>';
+            globalBranches.forEach(br => {
+                stSel.innerHTML += `<option value="${br.id}">${br.name}</option>`;
+                edSel.innerHTML += `<option value="${br.id}">${br.name}</option>`;
+                modSel.innerHTML += `<option value="${br.id}">${br.name}</option>`;
+            });
         }
-        
+
+        async function loadStaff() {
+            const tbody = document.getElementById('staff-tbody'), lSel = document.getElementById('leave_staff_id');
+            const { data } = await supabase.from('staff').select('*, branches(name)');
+            tbody.innerHTML = ''; lSel.innerHTML = '<option value="">اختر الموظف...</option>';
+            if(data) {
+                data.forEach(st => {
+                    lSel.innerHTML += `<option value="${st.id}">${st.name} - ${st.branches ? st.branches.name : ''}</option>`;
+                    const safePhoto = st.photo_url ? st.photo_url.replace(/'/g, "\\'") : '';
+                    const safeName = st.name.replace(/'/g, "\\'");
+                    const stTime = st.start_time ? st.start_time.substring(0,5) : '13:00';
+                    const enTime = st.end_time ? st.end_time.substring(0,5) : '23:00';
+                    
+                    tbody.innerHTML += `<tr>
+                        <td><img src="${st.photo_url || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;"></td>
+                        <td>${st.name}</td><td>${st.branches ? st.branches.name : '-'}</td>
+                        <td dir="ltr" style="text-align:right;">${stTime} - ${enTime}</td>
+                        <td class="action-btns">
+                            <button class="btn btn-sm bg-info" style="color:white;" onclick="openEditStaffModal('${st.id}', '${safeName}', '${st.branch_id}', '${safePhoto}', '${stTime}', '${enTime}')"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteStaff(${st.id})"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+                });
+            }
+        }
+
+        document.getElementById('add-staff-form').addEventListener('submit', async (e) => {
+            e.preventDefault(); const btn = document.getElementById('btn-submit-staff'); btn.innerText = 'جاري...'; btn.disabled = true;
+            try {
+                const name = document.getElementById('new_staff_name').value, branch_id = document.getElementById('new_staff_branch').value, start_time = document.getElementById('new_staff_start').value, end_time = document.getElementById('new_staff_end').value;
+                const file = document.getElementById('new_staff_photo_file').files[0];
+                let photo_url = 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+                if (file) photo_url = await uploadFileToSupabase(file, 'staff');
+                await supabase.from('staff').insert([{ name, branch_id, photo_url, start_time, end_time }]);
+                alert('تم الإضافة'); document.getElementById('add-staff-form').reset(); loadStaff();
+            } catch(err) { alert('خطأ'); } finally { btn.innerHTML = '<i class="fa-solid fa-plus"></i> إضافة'; btn.disabled = false; }
+        });
+
+        function openEditStaffModal(id, name, branch_id, photo_url, start_time, end_time) {
+            document.getElementById('edit_staff_id').value = id; document.getElementById('edit_staff_name').value = name; document.getElementById('edit_staff_branch').value = branch_id; document.getElementById('edit_staff_start').value = start_time; document.getElementById('edit_staff_end').value = end_time;
+            const defImg = 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+            document.getElementById('edit_staff_photo_url').value = photo_url || defImg; document.getElementById('edit_staff_photo_preview').src = photo_url || defImg; document.getElementById('edit_staff_photo_file').value = ''; 
+            document.getElementById('edit-staff-modal').classList.add('active');
+        }
+
+        function closeEditStaffModal() { document.getElementById('edit-staff-modal').classList.remove('active'); }
+
+        document.getElementById('edit-staff-form').addEventListener('submit', async (e) => {
+            e.preventDefault(); const btn = document.getElementById('btn-update-staff'); btn.innerText = 'جاري...'; btn.disabled = true;
+            try {
+                const id = document.getElementById('edit_staff_id').value, name = document.getElementById('edit_staff_name').value, branch_id = document.getElementById('edit_staff_branch').value, start_time = document.getElementById('edit_staff_start').value, end_time = document.getElementById('edit_staff_end').value;
+                const file = document.getElementById('edit_staff_photo_file').files[0];
+                let photo_url = document.getElementById('edit_staff_photo_url').value;
+                if (file) photo_url = await uploadFileToSupabase(file, 'staff');
+                await supabase.from('staff').update({ name, branch_id, photo_url, start_time, end_time }).eq('id', id);
+                alert('تم التعديل'); closeEditStaffModal(); loadStaff();
+            } catch (err) { alert('خطأ'); } finally { btn.innerText = 'حفظ التعديلات'; btn.disabled = false; }
+        });
+
+        async function deleteStaff(id) { if(confirm('حذف نهائي؟')) { await supabase.from('staff').delete().eq('id', id); loadStaff(); } }
+
+        /* ==========================================
+           5. الجداول والإعدادات
+           ========================================== */
+        document.getElementById('add-block-form').addEventListener('submit', async (e) => { e.preventDefault(); await supabase.from('blocked_hours').insert([{ blocked_date: document.getElementById('block_date').value, blocked_time: document.getElementById('block_time').value }]); alert('تم الحفظ'); e.target.reset(); });
+        document.getElementById('add-leave-form').addEventListener('submit', async (e) => { e.preventDefault(); await supabase.from('staff_leaves').insert([{ staff_id: document.getElementById('leave_staff_id').value, leave_date: document.getElementById('leave_date').value }]); alert('تم الحفظ'); e.target.reset(); });
+
+        async function loadSettings() {
+            if(salonConfig) {
+                document.getElementById('current_hero_url').value = salonConfig.hero_bg_url || '';
+                if(salonConfig.hero_bg_url) { const img = document.getElementById('current_hero_preview'); img.src = salonConfig.hero_bg_url; img.style.display = 'block'; }
+                document.getElementById('set_map').value = salonConfig.map_embed_url || '';
+                document.getElementById('set_fb').value = salonConfig.facebook_url || '';
+                document.getElementById('set_ig').value = salonConfig.instagram_url || '';
+                document.getElementById('set_snap').value = salonConfig.snapchat_url || '';
+            }
+        }
+
+        document.getElementById('settings-form').addEventListener('submit', async (e) => {
+            e.preventDefault(); const btn = document.getElementById('btn-submit-settings'); btn.innerText = 'جاري...'; btn.disabled = true;
+            try {
+                let finalUrl = document.getElementById('current_hero_url').value;
+                const file = document.getElementById('set_hero_file').files[0];
+                if (file) finalUrl = await uploadFileToSupabase(file, 'salon');
+                await supabase.from('salon_settings').update({ hero_bg_url: finalUrl, map_embed_url: document.getElementById('set_map').value, facebook_url: document.getElementById('set_fb').value, instagram_url: document.getElementById('set_ig').value, snapchat_url: document.getElementById('set_snap').value }).eq('id', 1);
+                alert('تم الحفظ'); const { data: set } = await supabase.from('salon_settings').select('*').limit(1).single(); salonConfig = set; loadSettings();
+            } catch(err) { alert('خطأ'); } finally { btn.innerText = 'حفظ الإعدادات'; btn.disabled = false; }
+        });
+
+        function loadBranchHours() { const id = document.getElementById('edit_branch_select').value; if(!id) return; const b = globalBranches.find(x => x.id == id); if(b) { document.getElementById('edit_open_time').value = b.open_time; document.getElementById('edit_close_time').value = b.close_time; } }
+
+        document.getElementById('branch-hours-form').addEventListener('submit', async (e) => { e.preventDefault(); await supabase.from('branches').update({ open_time: document.getElementById('edit_open_time').value, close_time: document.getElementById('edit_close_time').value }).eq('id', document.getElementById('edit_branch_select').value); alert('تم التحديث'); await loadBranches(); });
+
     </script>
 </body>
 </html>
