@@ -6,7 +6,7 @@
     <title>حجز موعد | نظام الخطوات</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Berkshire+Swash&display=swap" rel="stylesheet">
-    <link id="dynamic-favicon" rel="icon" href="">
+    <link id="dynamic-favicon" rel="icon" href="data:,">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
@@ -198,8 +198,9 @@
     </div>
 
     <div id="success-msg">
-        <h2 style="margin-bottom: 15px;">🎉 تم تسجيل حجزك بنجاح!</h2>
-        <a href="index.html" style="color: var(--primary-gold); text-decoration: underline;">العودة للصفحة الرئيسية</a>
+        <h2 style="margin-bottom: 15px;">🎉 تم استلام طلب حجزك بنجاح!</h2>
+        <p style="color: var(--text-gray); margin-bottom: 20px;">سيتم مراجعة الحجز وتأكيده عبر الواتساب قريباً.</p>
+        <a href="index.html" style="color: var(--primary-gold); text-decoration: underline; font-weight: bold;">العودة للصفحة الرئيسية</a>
     </div>
 
     <script>
@@ -423,7 +424,6 @@
 
             timeContainer.innerHTML = '';
             
-            // تحديد أوقات العمل: إذا تم اختيار موظف نأخذ مواعيده، غير ذلك نأخذ مواعيد الفرع
             let openHour, closeHour;
             if (selectedStaff.id !== null && selectedStaff.start_time && selectedStaff.end_time) {
                 openHour = parseInt(selectedStaff.start_time.split(':')[0]);
@@ -495,7 +495,7 @@
             } else if (currentStep === 2) {
                 if (selectedServices.length === 0) { alert('اختر خدمة واحدة على الأقل.'); return; }
             } else if (currentStep === 3) {
-                if (!document.getElementById('booking_date').value || !selectedStaff) { alert('اختر التاريخ الخبير.'); return; }
+                if (!document.getElementById('booking_date').value || !selectedStaff) { alert('اختر التاريخ والخبير.'); return; }
 
                 const btn = document.getElementById('btn-next'); const originalText = btn.innerText;
                 btn.innerText = 'جاري التحقق... ⏳'; btn.disabled = true;
@@ -582,16 +582,30 @@
                 document.getElementById('main-container').style.display = 'none';
                 document.getElementById('success-msg').style.display = 'block';
 
-                if (evoSettings.url) sendWhatsApp(name, formattedPhone, date, selectedTime, selectedServices, totalPrice);
+                if (evoSettings.url) sendWhatsApp(name, formattedPhone, date, selectedTime, selectedServices, totalPrice, bookingId);
             } catch (err) { alert('خطأ. حاول مرة أخرى.'); btn.innerText = 'تأكيد الحجز النهائي'; btn.disabled = false; document.getElementById('btn-prev').disabled = false; }
         });
 
-        async function sendWhatsApp(name, phone, date, time, services, price) {
+        // دالة الواتساب المحدثة لإرسال كود الحجز
+        async function sendWhatsApp(name, phone, date, time, services, price, bookingId) {
             try {
+                let shortId = bookingId.split('-')[0].toUpperCase();
                 let msg = evoSettings.template || 'تم الحجز بنجاح.';
-                msg = msg.replace(/{name}/g, name).replace(/{services}/g, services.map(s=>s.name).join('، ')).replace(/{date}/g, date).replace(/{time}/g, time.substring(0,5)).replace(/{price}/g, price).replace(/{currency}/g, salonCurrency).replace(/{branch}/g, selectedBranch.name);
+                msg = msg.replace(/{name}/g, name)
+                         .replace(/{booking_id}/g, shortId) // كود الحجز
+                         .replace(/{services}/g, services.map(s=>s.name).join('، '))
+                         .replace(/{date}/g, date)
+                         .replace(/{time}/g, time.substring(0,5))
+                         .replace(/{price}/g, price)
+                         .replace(/{currency}/g, salonCurrency)
+                         .replace(/{branch}/g, selectedBranch.name);
+                         
                 let apiUrl = evoSettings.url.endsWith('/') ? evoSettings.url.slice(0, -1) : evoSettings.url;
-                await fetch(`${apiUrl}/message/sendText/${evoSettings.instance}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': evoSettings.key }, body: JSON.stringify({"number": phone, "text": msg}) });
+                await fetch(`${apiUrl}/message/sendText/${evoSettings.instance}`, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json', 'apikey': evoSettings.key }, 
+                    body: JSON.stringify({"number": phone, "text": msg}) 
+                });
             } catch (e) {}
         }
     </script>
